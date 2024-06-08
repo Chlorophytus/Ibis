@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.26)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Project instantiation
-project(ibis VERSION 0.1.0.1)
+project(ibis VERSION 0.1.0.2)
 
 # Find Verilator package
 find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
@@ -20,9 +20,9 @@ add_executable(${PROJECT_NAME}
     src/test.cpp
     src/main.cpp)
 
-
-verilate(${PROJECT_NAME} SOURCES 
-    rtl/ibis_tmds_encoder.sv)
+verilate(${PROJECT_NAME} TOP_MODULE SOURCES 
+    rtl/ibis_tmds_encoder.sv
+		rtl/ibis_vga_timing.sv)
 
 # Use C++20 on target too
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED TRUE)

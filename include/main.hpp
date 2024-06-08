@@ -1,8 +1,9 @@
 #pragma once
-#include "configuration.hpp"
-#include <bits/stdc++.h>
 #include "Vibis_tmds_encoder.h"
+#include "Vibis_vga_timing.h"
+#include "configuration.hpp"
 #include "verilated.h"
+#include <bits/stdc++.h>
 
 using U8 = std::uint8_t;
 using U16 = std::uint16_t;

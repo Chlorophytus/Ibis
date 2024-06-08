@@ -60,7 +60,10 @@ module ibis_tmds_encoder
   end: ibis_tmds_encoder_control
 
   always_ff @(posedge clock) begin: ibis_tmds_encoder_output
-    if(enable & data_enable) begin
+		if(reset) begin
+			// synchronous reset sequence for bias to become zero
+			r_bias <= 5'sh0;
+		end else if(enable & data_enable) begin
       if((r_bias == 5'sh0) | (w_balance == 5'sh0)) begin
         if(~w_i[8]) begin
           r_out <= {2'b10, ~unsigned'(w_i[7:0])};
