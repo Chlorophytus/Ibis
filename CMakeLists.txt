@@ -20,9 +20,9 @@ add_executable(${PROJECT_NAME}
     src/test.cpp
     src/main.cpp)
 
-verilate(${PROJECT_NAME} TOP_MODULE SOURCES 
-    rtl/ibis_tmds_encoder.sv
-		rtl/ibis_vga_timing.sv)
+verilate(${PROJECT_NAME} PREFIX Vibis_ripple_carry SOURCES rtl/ibis_ripple_carry.sv)
+verilate(${PROJECT_NAME} PREFIX Vibis_tmds_encoder SOURCES rtl/ibis_tmds_encoder.sv)
+verilate(${PROJECT_NAME} PREFIX Vibis_vga_timing SOURCES rtl/ibis_vga_timing.sv)
 
 # Use C++20 on target too
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED TRUE)

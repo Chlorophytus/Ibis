@@ -1,6 +1,7 @@
 #include "../include/main.hpp"
 #include "../include/con.hpp"
 #include "../include/test.hpp"
+#include "Vibis_ripple_carry.h"
 #include <atomic>
 #include <chrono>
 
@@ -14,31 +15,35 @@ int main(int argc, char **argv) {
     std::shared_ptr<VerilatedContext> context{new VerilatedContext};
     context->commandArgs(argc, argv);
 
-		// Test case runner
+    // Test case runner
     std::list<std::thread> tests{};
     const U64 max_threads = std::thread::hardware_concurrency();
     std::atomic<U64> tests_semaphore(0);
     ibis::test::tester t{context};
 
-		// Test cases...
+    // Test cases...
     tests.emplace_back([&t, &tests_semaphore] {
       t.run<Vibis_tmds_encoder>(ibis::test::test_0, tests_semaphore,
                                 "TMDS encoder should have low bias");
     });
-		tests.emplace_back([&t, &tests_semaphore] {
+    tests.emplace_back([&t, &tests_semaphore] {
       t.run<Vibis_vga_timing>(ibis::test::test_1, tests_semaphore,
-                                "VGA timers should function properly");
+                              "VGA timers should function properly");
     });
-		// Multithreaded runner
+    tests.emplace_back([&t, &tests_semaphore] {
+      t.run<Vibis_ripple_carry>(ibis::test::test_2, tests_semaphore,
+                                "2-bit ripple-carry works properly");
+    });
+    // Multithreaded runner
     while (!tests.empty()) {
-			// Dispatch for this many threads
-			for(auto thread_i = 0; thread_i < max_threads; thread_i++) {
-				if(tests.empty()) {
-					break;
-				}
-      	tests.front().detach();
-      	tests.pop_front();
-			}
+      // Dispatch for this many threads
+      for (auto thread_i = 0; thread_i < max_threads; thread_i++) {
+        if (tests.empty()) {
+          break;
+        }
+        tests.front().detach();
+        tests.pop_front();
+      }
       do {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
       } while (tests_semaphore > 0);

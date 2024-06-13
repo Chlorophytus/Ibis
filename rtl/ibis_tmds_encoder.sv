@@ -2,9 +2,9 @@
 `default_nettype none
 // https://github.com/projf/display_controller/blob/master/rtl/tmds_encoder_dvi.v
 module ibis_tmds_encoder
- (input wire logic clock,
+ (input wire logic aclk,
+  input wire logic aresetn,
   input wire logic enable,
-  input wire logic reset,
   input wire logic unsigned [7:0] data,
   input wire logic data_enable,
   input wire logic unsigned [1:0] control,
@@ -53,14 +53,16 @@ module ibis_tmds_encoder
                     );
   assign w_i_zeroes = 5'sh8 - w_i_ones;
   assign w_balance = w_i_ones - w_i_zeroes;
-  always_ff @(posedge clock) begin: ibis_tmds_encoder_control
-    if(enable) begin
+  always_ff @(posedge aclk) begin: ibis_tmds_encoder_control
+		if(!aresetn) begin
+			r_control <= 2'b00;
+		end else if(enable) begin
       r_control <= control;
     end
   end: ibis_tmds_encoder_control
 
-  always_ff @(posedge clock) begin: ibis_tmds_encoder_output
-		if(reset) begin
+  always_ff @(posedge aclk) begin: ibis_tmds_encoder_output
+		if(!aresetn) begin
 			// synchronous reset sequence for bias to become zero
 			r_bias <= 5'sh0;
 		end else if(enable & data_enable) begin

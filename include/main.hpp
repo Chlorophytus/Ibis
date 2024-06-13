@@ -1,6 +1,7 @@
 #pragma once
 #include "Vibis_tmds_encoder.h"
 #include "Vibis_vga_timing.h"
+#include "Vibis_ripple_carry.h"
 #include "configuration.hpp"
 #include "verilated.h"
 #include <bits/stdc++.h>

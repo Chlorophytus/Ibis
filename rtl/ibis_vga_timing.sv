@@ -2,9 +2,9 @@
 `default_nettype none
 // https://projectf.io/posts/video-timings-vga-720p-1080p/#vga-640x480-60-hz
 module ibis_vga_timing
- (input wire logic clock,
+ (input wire logic aclk,
+  input wire logic aresetn,
   input wire logic enable,
-  input wire logic reset,
 	// With sync it's the sync pulse, with blank it's when we're sending control
 	// codes through TMDS, or rather blanking
 	output logic vsync,
@@ -26,8 +26,8 @@ module ibis_vga_timing
 
 	// Shift-to-5 state machine to step the clock from TMDS speed to ~25.175MHz
 	logic unsigned [4:0] r_state;
-	always_ff @(posedge clock) begin: ibis_vga_timing_statem
-		if(reset) begin
+	always_ff @(posedge aclk) begin: ibis_vga_timing_statem
+		if(!aresetn) begin
 			r_state <= 5'b00001;
 		end else if(enable) begin
 			r_state <= {r_state[3:0], r_state[4]};
@@ -36,8 +36,8 @@ module ibis_vga_timing
 
 	// X ordinate changes first
 	logic unsigned [11:0] r_ord_x;
-	always_ff @(posedge clock) begin: ibis_vga_timing_x
-		if(reset) begin
+	always_ff @(posedge aclk) begin: ibis_vga_timing_x
+		if(!aresetn) begin
 			r_ord_x <= X_BACK_PORCH - 12'h001;
 		end else if(enable & r_state[0]) begin
 			if(r_ord_x < X_BACK_PORCH) begin
@@ -50,8 +50,8 @@ module ibis_vga_timing
 
 	// y ordinate changes when x == 12'h000
 	logic unsigned [11:0] r_ord_y;
-	always_ff @(posedge clock) begin: ibis_vga_timing_y
-		if(reset) begin
+	always_ff @(posedge aclk) begin: ibis_vga_timing_y
+		if(!aresetn) begin
 			r_ord_y <= Y_BACK_PORCH - 12'h001;
 		end else if(enable & r_state[1] & ~(|r_ord_x)) begin
 			if(r_ord_y < Y_BACK_PORCH) begin
@@ -65,8 +65,8 @@ module ibis_vga_timing
 	// hopefully when syncing to state bit 4 we can get a uniform output
 	logic unsigned [11:0] r_out_ord_x;
 	logic unsigned [11:0] r_out_ord_y;
-	always_ff @(posedge clock) begin: ibis_vga_timing_xy_sync
-		if(reset) begin
+	always_ff @(posedge aclk) begin: ibis_vga_timing_xy_sync
+		if(!aresetn) begin
 			r_out_ord_x <= 12'h000;
 			r_out_ord_y <= 12'h000;
 		end else if(enable & r_state[4]) begin
