@@ -5,20 +5,20 @@ cmake_minimum_required(VERSION 3.26)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Project instantiation
-project(ibis VERSION 0.1.0.2)
+project(ibis VERSION 0.1.0.3)
 
 # Find Verilator package
 find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
 
 # Configure the project header
 configure_file(include/configuration.txt
-    ${PROJECT_SOURCE_DIR}/include/configuration.hpp)
+  ${PROJECT_SOURCE_DIR}/include/configuration.hpp)
 
 # Build our main executable
 add_executable(${PROJECT_NAME}
-    src/con.cpp
-    src/test.cpp
-    src/main.cpp)
+  src/con.cpp
+  src/test.cpp
+  src/main.cpp)
 
 verilate(${PROJECT_NAME} PREFIX Vibis_ripple_carry SOURCES rtl/ibis_ripple_carry.sv)
 verilate(${PROJECT_NAME} PREFIX Vibis_tmds_encoder SOURCES rtl/ibis_tmds_encoder.sv)
