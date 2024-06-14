@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.26)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Project instantiation
-project(ibis VERSION 0.1.0.2)
+project(ibis VERSION 0.1.0.3)
 
 # Find Verilator package
 find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}
 verilate(${PROJECT_NAME} PREFIX Vibis_ripple_carry SOURCES rtl/ibis_ripple_carry.sv)
 verilate(${PROJECT_NAME} PREFIX Vibis_tmds_encoder SOURCES rtl/ibis_tmds_encoder.sv)
 verilate(${PROJECT_NAME} PREFIX Vibis_vga_timing SOURCES rtl/ibis_vga_timing.sv)
+verilate(${PROJECT_NAME} PREFIX Vibis_phase_accumulator SOURCES rtl/ibis_phase_accumulator.sv)
 
 # Use C++20 on target too
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED TRUE)

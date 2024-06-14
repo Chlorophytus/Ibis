@@ -1,6 +1,7 @@
 #include "../include/main.hpp"
 #include "../include/con.hpp"
 #include "../include/test.hpp"
+#include "Vibis_phase_accumulator.h"
 #include "Vibis_ripple_carry.h"
 #include <atomic>
 #include <chrono>
@@ -9,6 +10,8 @@ int main(int argc, char **argv) {
   int error_code = EXIT_FAILURE;
   ibis::con::init();
   ibis::con::listener::all.emplace_back(new ibis::con::listener_stderr);
+//  ibis::con::listener::all.front()->priority_set(
+//      ibis::con::priority::informational);
   try {
     ibis::con::listener::informational("Ibis Test Framework ",
                                        ibis_VSTRING_FULL);
@@ -23,16 +26,13 @@ int main(int argc, char **argv) {
 
     // Test cases...
     tests.emplace_back([&t, &tests_semaphore] {
-      t.run<Vibis_tmds_encoder>(ibis::test::test_0, tests_semaphore,
-                                "TMDS encoder should have low bias");
-    });
-    tests.emplace_back([&t, &tests_semaphore] {
-      t.run<Vibis_vga_timing>(ibis::test::test_1, tests_semaphore,
-                              "VGA timers should function properly");
-    });
-    tests.emplace_back([&t, &tests_semaphore] {
-      t.run<Vibis_ripple_carry>(ibis::test::test_2, tests_semaphore,
+      t.run<Vibis_ripple_carry>(ibis::test::test_1, tests_semaphore,
                                 "2-bit ripple-carry works properly");
+    });
+    tests.emplace_back([&t, &tests_semaphore] {
+      t.run<Vibis_phase_accumulator>(
+          ibis::test::test_2, tests_semaphore,
+          "lone 5-bit phase accumulator works properly");
     });
     // Multithreaded runner
     while (!tests.empty()) {

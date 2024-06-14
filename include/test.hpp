@@ -23,7 +23,6 @@ public:
     run_func_t<D> _func = func;
     std::unique_ptr<D> _device_under_test = std::make_unique<D>(_context.get());
     while (_func(_step, *_device_under_test, description)) {
-
       _step++;
     }
     con::listener::informational(description, ": Finished test in ", _step,
@@ -39,8 +38,7 @@ public:
   tester &operator=(const tester &) = delete;
   tester &operator=(tester &&) = delete;
 };
-bool test_0(const U64 &, Vibis_tmds_encoder &, const std::string &);
-bool test_1(const U64 &, Vibis_vga_timing &, const std::string &);
-bool test_2(const U64 &, Vibis_ripple_carry &, const std::string &);
+bool test_1(const U64 &, Vibis_ripple_carry &, const std::string &);
+bool test_2(const U64 &, Vibis_phase_accumulator &, const std::string &);
 } // namespace test
 } // namespace ibis
