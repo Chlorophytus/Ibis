@@ -38,5 +38,6 @@ public:
 bool test_1(const U64 &, Vibis_ripple_carry &, const std::string &);
 bool test_2(const U64 &, Vibis_phase_accumulator &, const std::string &);
 bool test_3(const U64 &, Vibis_phase_accumulator_dual &, const std::string &);
+bool test_4(const U64 &, Vibis_vga_timing &, const std::string &);
 } // namespace test
 } // namespace ibis

@@ -87,16 +87,12 @@ public:
     log_all(priority::emergency, t...);
   }
 };
-/// @brief A listener that only outputs to stderr.
-class listener_stderr : public listener {
-  static std::mutex _debug;
+/// @brief A listener that only outputs to stdout.
+class listener_stdio : public listener {
   const std::chrono::time_point<std::chrono::steady_clock> t0{
       std::chrono::steady_clock::now()};
   void _log_one(const priority sent_priority,
                 const std::string &what) const override {
-		// Code needs to be single-threaded
-    std::scoped_lock s(_debug);
-
     const std::chrono::time_point<std::chrono::steady_clock> t1{
         std::chrono::steady_clock::now()};
     const F32 wall_time =
@@ -104,35 +100,35 @@ class listener_stderr : public listener {
         1000000.0f;
     switch (sent_priority) {
     case priority::debug:
-      std::fprintf(stderr, "[%0.6f] DEBUG: %s\n", wall_time, what.c_str());
+      std::printf("[%0.6f] DEBUG: %s\n", wall_time, what.c_str());
       break;
 
     case priority::informational:
-      std::fprintf(stderr, "[%0.6f] INFO: %s\n", wall_time, what.c_str());
+      std::printf("[%0.6f] INFO: %s\n", wall_time, what.c_str());
       break;
 
     case priority::notice:
-      std::fprintf(stderr, "[%0.6f] NOTICE: %s\n", wall_time, what.c_str());
+      std::printf("[%0.6f] NOTICE: %s\n", wall_time, what.c_str());
       break;
 
     case priority::warning:
-      std::fprintf(stderr, "[%0.6f] WARN: %s\n", wall_time, what.c_str());
+      std::printf("[%0.6f] WARN: %s\n", wall_time, what.c_str());
       break;
 
     case priority::error:
-      std::fprintf(stderr, "[%0.6f] ERROR: %s\n", wall_time, what.c_str());
+      std::printf("[%0.6f] ERROR: %s\n", wall_time, what.c_str());
       break;
 
     case priority::critical:
-      std::fprintf(stderr, "[%0.6f] CRITICAL: %s\n", wall_time, what.c_str());
+      std::printf("[%0.6f] CRITICAL: %s\n", wall_time, what.c_str());
       break;
 
     case priority::alert:
-      std::fprintf(stderr, "[%0.6f] ALERT: %s\n", wall_time, what.c_str());
+      std::printf("[%0.6f] ALERT: %s\n", wall_time, what.c_str());
       break;
 
     case priority::emergency:
-      std::fprintf(stderr, "[%0.6f] EMERGENCY: %s\n", wall_time, what.c_str());
+      std::printf("[%0.6f] EMERGENCY: %s\n", wall_time, what.c_str());
       break;
 
     default:

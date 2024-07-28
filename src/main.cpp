@@ -5,7 +5,7 @@
 int main(int argc, char **argv) {
   int error_code = EXIT_FAILURE;
   ibis::con::init();
-  ibis::con::listener::all.emplace_back(new ibis::con::listener_stderr);
+  ibis::con::listener::all.emplace_back(new ibis::con::listener_stdio);
 #ifdef ibis_NDEBUG
   ibis::con::listener::all.front()->priority_set(
       ibis::con::priority::informational);
@@ -35,6 +35,11 @@ int main(int argc, char **argv) {
       t.run<Vibis_phase_accumulator_dual>(
           ibis::test::test_3,
           "carrying dual 5-bit phase accumulators work properly");
+    });
+    tests.emplace_back([&t] {
+      t.run<Vibis_vga_timing>(
+          ibis::test::test_4,
+          "VGA timings work properly");
     });
 
     while (!tests.empty()) {
