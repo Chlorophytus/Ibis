@@ -4,6 +4,7 @@
 #include "Vibis_ripple_carry.h"
 #include "Vibis_phase_accumulator.h"
 #include "Vibis_phase_accumulator_dual.h"
+#include "Vibis_popcnt6.h"
 #include "configuration.hpp"
 #include "verilated.h"
 #include <bits/stdc++.h>

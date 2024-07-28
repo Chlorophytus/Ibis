@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.26)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Project instantiation
-project(ibis VERSION 0.1.0.6)
+project(ibis VERSION 0.1.0.7)
 
 # Find Verilator package
 find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
@@ -14,9 +14,13 @@ find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
 configure_file(include/configuration.txt
     ${PROJECT_SOURCE_DIR}/include/configuration.hpp)
 
+# Glob test cases
+file(GLOB ${PROJECT_NAME}_TESTS "src/test_*.cpp")
+
 # Build our main executable
 add_executable(${PROJECT_NAME}
     src/con.cpp
+    ${${PROJECT_NAME}_TESTS}
     src/test.cpp
     src/main.cpp)
 
@@ -33,6 +37,8 @@ verilate(${PROJECT_NAME} PREFIX Vibis_phase_accumulator SOURCES
 verilate(${PROJECT_NAME} PREFIX Vibis_phase_accumulator_dual SOURCES
   rtl/ibis_phase_accumulator_dual.sv
   rtl/ibis_phase_accumulator.sv)
+verilate(${PROJECT_NAME} PREFIX Vibis_popcnt6 SOURCES
+  rtl/ibis_popcnt6.sv)
 
 # Use C++20 on target too
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED TRUE)

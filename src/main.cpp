@@ -41,7 +41,11 @@ int main(int argc, char **argv) {
           ibis::test::test_4,
           "VGA timings work properly");
     });
-
+    tests.emplace_back([&t] {
+      t.run<Vibis_popcnt6>(
+          ibis::test::test_5,
+          "6-bit population count is fully verified");
+    });
     while (!tests.empty()) {
       // Verilator doesn't like to single-thread, just do them one at a time.
       tests.front().join();
