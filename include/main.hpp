@@ -3,6 +3,7 @@
 #include "Vibis_vga_timing.h"
 #include "Vibis_ripple_carry.h"
 #include "Vibis_phase_accumulator.h"
+#include "Vibis_phase_accumulator_dual.h"
 #include "configuration.hpp"
 #include "verilated.h"
 #include <bits/stdc++.h>

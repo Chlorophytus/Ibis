@@ -6,6 +6,7 @@ module ibis_phase_accumulator
   input wire logic aresetn,
   input wire logic enable,
   input wire logic write_enable,
+  input wire logic phase_carry,
   input wire logic phase_reset,
   input wire logic unsigned [4:0] phase_in,
   output logic unsigned [4:0] DEBUG_phase,
@@ -32,7 +33,10 @@ module ibis_phase_accumulator
       if(phase_reset) begin
         // When the phase should be reset, it'll reset to the hold value
         r_phase <= r_phase_hold;
-      end else if(|r_phase) begin
+      end else if(phase_carry) begin
+        // Carrying will force the phase to all high
+        r_phase <= 5'b11111;
+      end else if((|r_phase)) begin
         // Decrement the phase accumulator until it is zero
         r_phase <= r_phase - 5'b00001;
       end

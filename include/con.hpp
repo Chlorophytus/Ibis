@@ -95,8 +95,8 @@ class listener_stderr : public listener {
   void _log_one(const priority sent_priority,
                 const std::string &what) const override {
 		// Code needs to be single-threaded
-
     std::scoped_lock s(_debug);
+
     const std::chrono::time_point<std::chrono::steady_clock> t1{
         std::chrono::steady_clock::now()};
     const F32 wall_time =

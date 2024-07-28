@@ -14,9 +14,7 @@ class tester {
 
 public:
   template <typename D>
-  void run(run_func_t<D> &&func, std::atomic<U64> &sema,
-           std::string &&_description) {
-    sema++;
+  void run(run_func_t<D> &&func, std::string &&_description) {
 		const auto description = _description;
     con::listener::informational(description, ": Starting test");
     step_t _step = 0;
@@ -27,7 +25,6 @@ public:
     }
     con::listener::informational(description, ": Finished test in ", _step,
                                  " steps");
-    sema--;
   }
 
   tester(std::shared_ptr<VerilatedContext> &);
@@ -40,5 +37,6 @@ public:
 };
 bool test_1(const U64 &, Vibis_ripple_carry &, const std::string &);
 bool test_2(const U64 &, Vibis_phase_accumulator &, const std::string &);
+bool test_3(const U64 &, Vibis_phase_accumulator_dual &, const std::string &);
 } // namespace test
 } // namespace ibis
