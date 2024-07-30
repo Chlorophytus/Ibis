@@ -45,6 +45,10 @@ int main(int argc, char **argv) {
       t.run<Vibis_popcnt6>(
           ibis::test::test_5,
           "6-bit population count is fully verified");
+    });    tests.emplace_back([&t] {
+      t.run<Vibis_tmds_encoder>(
+          ibis::test::test_6,
+          "TMDS encoder doesn't over/under-bias");
     });
     while (!tests.empty()) {
       // Verilator doesn't like to single-thread, just do them one at a time.
