@@ -18,7 +18,6 @@ int main(int argc, char **argv) {
 
     // Test case runner
     std::list<std::thread> tests{};
-    const U64 max_threads = std::thread::hardware_concurrency();
     ibis::test::tester t{context};
 
     // Test cases...
