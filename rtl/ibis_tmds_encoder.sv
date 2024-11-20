@@ -73,10 +73,10 @@ module ibis_tmds_encoder
   end: ibis_tmds_encoder_control
 
   always_ff @(posedge aclk) begin: ibis_tmds_encoder_output
-		if(!aresetn) begin
-			// synchronous reset sequence for bias to become zero
-			r_bias <= 5'sh0;
-		end else if(enable & data_enable) begin
+    if(!aresetn) begin
+        // synchronous reset sequence for bias to become zero
+        r_bias <= 5'sh0;
+    end else if(enable & data_enable) begin
       if((r_bias == 5'sh0) | (w_balance == 5'sh0)) begin
         if(~w_i[8]) begin
           r_out <= {2'b10, ~unsigned'(w_i[7:0])};
@@ -101,6 +101,7 @@ module ibis_tmds_encoder
         2'b01: r_out <= 10'b0010101011;
         2'b10: r_out <= 10'b0101010100;
         2'b11: r_out <= 10'b1010101011;
+        default: ;
       endcase
       r_bias <= 5'sh0;
     end

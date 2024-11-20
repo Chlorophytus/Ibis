@@ -26,14 +26,14 @@ module ibis_tmds_pump
     end
   end: ibis_tmds_pump_hold
   
-  wire logic unsigned [1:0] w_parallel_block;
+  logic unsigned [1:0] r_parallel_block;
   always_comb begin: ibis_tmds_pump_10to2
     priority casez(r_state)
-      5'b00001: w_parallel_block = r_parallel[1:0];
-      5'b0001z: w_parallel_block = r_parallel[3:2];
-      5'b001zz: w_parallel_block = r_parallel[5:4];
-      5'b01zzz: w_parallel_block = r_parallel[7:6];
-      5'b1zzzz: w_parallel_block = r_parallel[9:8];
+      5'b00001: r_parallel_block = r_parallel[1:0];
+      5'b0001z: r_parallel_block = r_parallel[3:2];
+      5'b001zz: r_parallel_block = r_parallel[5:4];
+      5'b01zzz: r_parallel_block = r_parallel[7:6];
+      5'b1zzzz: r_parallel_block = r_parallel[9:8];
       default: ;
     endcase
   end: ibis_tmds_pump_10to2
@@ -46,8 +46,8 @@ module ibis_tmds_pump
     .Q(out_serial),
     .C(aclk),
     .CE(enable),
-    .D1(w_parallel_block[0]),
-    .D2(w_parallel_block[1]),
+    .D1(r_parallel_block[0]),
+    .D2(r_parallel_block[1]),
     .R(!aresetn),
     .S()
   );
