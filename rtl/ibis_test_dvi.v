@@ -14,8 +14,8 @@ module ibis_test_dvi
   wire hblankn;
   wire hsync;
   wire vsync;
-  wire [9:0] x;
-  wire [9:0] y;
+  wire [15:0] x;
+  wire [15:0] y;
 
   ibis_vga_timing timing(
     .aclk(aclk),
