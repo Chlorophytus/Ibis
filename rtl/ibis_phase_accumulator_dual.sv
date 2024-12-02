@@ -1,38 +1,38 @@
 `timescale 1ns / 1ps
 `default_nettype none
-// Two phase accumulators
-module ibis_phase_accumulator_dual
+// Four phase accumulators, makes a 16-bit one
+module ibis_phase_accumulator_quad
  (input wire logic aclk,
   input wire logic aresetn,
   input wire logic enable,
   input wire logic write_enable,
   input wire logic phase_reset,
-  input wire logic unsigned [9:0] phase_in,
-  output logic unsigned [4:0] DEBUG_phase0,
-  output logic unsigned [4:0] DEBUG_phase1,
-  output logic unsigned [4:0] DEBUG_phase0_hold,
-  output logic unsigned [4:0] DEBUG_phase1_hold,
-  output logic unsigned [9:0] DEBUG_phase_all,
+  input wire logic unsigned [7:0] phase_in,
+  output logic unsigned [3:0] DEBUG_phase0,
+  output logic unsigned [3:0] DEBUG_phase1,
+  output logic unsigned [3:0] DEBUG_phase0_hold,
+  output logic unsigned [3:0] DEBUG_phase1_hold,
+  output logic unsigned [7:0] DEBUG_phase_all,
   output logic phase_is_zero);
   
-  logic unsigned [4:0] r_phase0_set;
-  logic unsigned [4:0] r_phase0_hold;
-  logic unsigned [4:0] r_phase1_set;
+  logic unsigned [3:0] r_phase0_set;
+  logic unsigned [3:0] r_phase0_hold;
+  logic unsigned [3:0] r_phase1_set;
 
   // Setter actual register setting
   always_ff @(posedge aclk) begin: ibis_phase_accumulator_dual_setter_set1
     if(!aresetn) begin
-      r_phase1_set <= 5'b00000;
+      r_phase1_set <= 4'b0000;
     end else if(enable & write_enable) begin
-      r_phase1_set <= phase_in[9:5];
+      r_phase1_set <= phase_in[7:4];
     end
   end: ibis_phase_accumulator_dual_setter_set1
   always_ff @(posedge aclk) begin: ibis_phase_accumulator_dual_setter_set0
     if(!aresetn) begin
-      r_phase0_set <= 5'b00000;
+      r_phase0_set <= 4'b0000;
     end else if(enable & write_enable) begin
       // TODO: Check if this subtraction behaves correctly
-      r_phase0_set <= phase_in[4:0];
+      r_phase0_set <= phase_in[3:0];
     end
   end: ibis_phase_accumulator_dual_setter_set0
 
@@ -66,4 +66,4 @@ module ibis_phase_accumulator_dual
 
   assign phase_is_zero = phase0_is_zero & phase1_is_zero;
   assign DEBUG_phase_all = {DEBUG_phase1, DEBUG_phase0};
-endmodule: ibis_phase_accumulator_dual
+endmodule: ibis_phase_accumulator_quad

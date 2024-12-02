@@ -11,8 +11,8 @@ module ibis_vga_timing
   output logic vblankn,
   output logic hsync,
   output logic hblankn,
-  output logic unsigned [9:0] ord_x,
-  output logic unsigned [9:0] ord_y);
+  output logic unsigned [15:0] ord_x,
+  output logic unsigned [15:0] ord_y);
   // Configure horizontal display timings here
   localparam X_ACTIVE = 640;
   localparam X_FRONT_PORCH = X_ACTIVE + 16;
@@ -47,7 +47,7 @@ module ibis_vga_timing
   wire logic unsigned [3:0] x_status;
   wire logic accumulators_enable;
   assign accumulators_enable = |r_state_writer | r_state[4];
-  ibis_phase_accumulator_dual x_active_acc(
+  ibis_phase_accumulator_quad x_active_acc(
     .aclk(aclk),
     .aresetn(aresetn),
     .enable(enable & accumulators_enable),
@@ -60,23 +60,31 @@ module ibis_vga_timing
     .DEBUG_phase0(),
     .DEBUG_phase1(),
     .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold()
+    .DEBUG_phase1_hold(),
+    .DEBUG_phase2(),
+    .DEBUG_phase3(),
+    .DEBUG_phase2_hold(),
+    .DEBUG_phase3_hold()
   );
-  ibis_phase_accumulator_dual x_front_porch_acc(
+  ibis_phase_accumulator_quad x_front_porch_acc(
     .aclk(aclk),
     .aresetn(aresetn),
     .enable(enable & accumulators_enable),
     .write_enable(r_state_writer[0]),
-    .phase_reset(r_state_writer[1]  | x_status[3]),
+    .phase_reset(r_state_writer[1] | x_status[3]),
     .phase_in(X_FRONT_PORCH - 1),
     .phase_is_zero(x_status[1]),
     .DEBUG_phase_all(),
     .DEBUG_phase0(),
     .DEBUG_phase1(),
     .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold()
+    .DEBUG_phase1_hold(),
+    .DEBUG_phase2(),
+    .DEBUG_phase3(),
+    .DEBUG_phase2_hold(),
+    .DEBUG_phase3_hold()
   );
-  ibis_phase_accumulator_dual x_sync_acc(
+  ibis_phase_accumulator_quad x_sync_acc(
     .aclk(aclk),
     .aresetn(aresetn),
     .enable(enable & accumulators_enable),
@@ -88,9 +96,13 @@ module ibis_vga_timing
     .DEBUG_phase0(),
     .DEBUG_phase1(),
     .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold()
+    .DEBUG_phase1_hold(),
+    .DEBUG_phase2(),
+    .DEBUG_phase3(),
+    .DEBUG_phase2_hold(),
+    .DEBUG_phase3_hold()
   );
-  ibis_phase_accumulator_dual x_back_porch_acc(
+  ibis_phase_accumulator_quad x_back_porch_acc(
     .aclk(aclk),
     .aresetn(aresetn),
     .enable(enable & accumulators_enable),
@@ -102,11 +114,15 @@ module ibis_vga_timing
     .DEBUG_phase0(),
     .DEBUG_phase1(),
     .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold()
+    .DEBUG_phase1_hold(),
+    .DEBUG_phase2(),
+    .DEBUG_phase3(),
+    .DEBUG_phase2_hold(),
+    .DEBUG_phase3_hold()
   );
 
   wire logic unsigned [3:0] y_status;
-  ibis_phase_accumulator_dual y_active_acc(
+  ibis_phase_accumulator_quad y_active_acc(
     .aclk(aclk),
     .aresetn(aresetn),
     .enable(enable & accumulators_enable & x_status[3]),
@@ -118,9 +134,13 @@ module ibis_vga_timing
     .DEBUG_phase0(),
     .DEBUG_phase1(),
     .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold()
+    .DEBUG_phase1_hold(),
+    .DEBUG_phase2(),
+    .DEBUG_phase3(),
+    .DEBUG_phase2_hold(),
+    .DEBUG_phase3_hold()
   );
-  ibis_phase_accumulator_dual y_front_porch_acc(
+  ibis_phase_accumulator_quad y_front_porch_acc(
     .aclk(aclk),
     .aresetn(aresetn),
     .enable(enable & accumulators_enable & x_status[3]),
@@ -132,9 +152,13 @@ module ibis_vga_timing
     .DEBUG_phase0(),
     .DEBUG_phase1(),
     .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold()
+    .DEBUG_phase1_hold(),
+    .DEBUG_phase2(),
+    .DEBUG_phase3(),
+    .DEBUG_phase2_hold(),
+    .DEBUG_phase3_hold()
   );
-  ibis_phase_accumulator_dual y_sync_acc(
+  ibis_phase_accumulator_quad y_sync_acc(
     .aclk(aclk),
     .aresetn(aresetn),
     .enable(enable & accumulators_enable & x_status[3]),
@@ -146,9 +170,13 @@ module ibis_vga_timing
     .DEBUG_phase0(),
     .DEBUG_phase1(),
     .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold()
+    .DEBUG_phase1_hold(),
+    .DEBUG_phase2(),
+    .DEBUG_phase3(),
+    .DEBUG_phase2_hold(),
+    .DEBUG_phase3_hold()
   );
-  ibis_phase_accumulator_dual y_back_porch_acc(
+  ibis_phase_accumulator_quad y_back_porch_acc(
     .aclk(aclk),
     .aresetn(aresetn),
     .enable(enable & accumulators_enable & x_status[3]),
@@ -160,7 +188,11 @@ module ibis_vga_timing
     .DEBUG_phase0(),
     .DEBUG_phase1(),
     .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold()
+    .DEBUG_phase1_hold(),
+    .DEBUG_phase2(),
+    .DEBUG_phase3(),
+    .DEBUG_phase2_hold(),
+    .DEBUG_phase3_hold()
   );
 
   // Both sync pulses are negative

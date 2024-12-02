@@ -1,5 +1,4 @@
 #pragma once
-#include "Vibis_ripple_carry.h"
 #include "con.hpp"
 #include "main.hpp"
 namespace ibis {
@@ -41,5 +40,6 @@ bool test_3(const U64 &, Vibis_phase_accumulator_dual &, const std::string &);
 bool test_4(const U64 &, Vibis_vga_timing &, const std::string &);
 bool test_5(const U64 &, Vibis_popcnt6 &, const std::string &);
 bool test_6(const U64 &, Vibis_tmds_encoder &, const std::string &);
+bool test_7(const U64 &, Vibis_phase_accumulator_quad &, const std::string &);
 } // namespace test
 } // namespace ibis

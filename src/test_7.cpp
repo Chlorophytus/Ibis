@@ -1,10 +1,11 @@
 #include "../include/test.hpp"
 using namespace ibis;
 
-bool test::test_3(const U64 &step, Vibis_phase_accumulator_dual &dut,
+bool test::test_7(const U64 &step, Vibis_phase_accumulator_quad &dut,
                   const std::string &description) {
-  constexpr auto PHASE = 50;
+  constexpr auto PHASE = (1 << 13) + 1337;
   constexpr auto RESET_OFF_WHEN = 16;
+  const auto pCexpected = (dut.DEBUG_phase_all > 0) ? (PHASE - ((step - (RESET_OFF_WHEN + 6)) >> 1)) : 0;
   switch (step) {
   case 0: {
     dut.aresetn = false;
@@ -37,9 +38,14 @@ bool test::test_3(const U64 &step, Vibis_phase_accumulator_dual &dut,
   con::listener::debug(
       description, ": (", step, ") p0: ", dut.DEBUG_phase0,
       " p0hold: ", dut.DEBUG_phase0_hold, " p1: ", dut.DEBUG_phase1,
-      " p1hold: ", dut.DEBUG_phase1_hold, " iszero: ", dut.phase_is_zero,
-      " pC: ", dut.DEBUG_phase_all);
+      " p1hold: ", dut.DEBUG_phase1_hold, " p2: ", dut.DEBUG_phase2,
+      " p2hold: ", dut.DEBUG_phase2_hold, " p3: ", dut.DEBUG_phase3,
+      " p3hold: ", dut.DEBUG_phase3_hold, " iszero: ", dut.phase_is_zero,
+      " pC: ", dut.DEBUG_phase_all, " pCexpected: ", pCexpected);
 
-  return step < RESET_OFF_WHEN + (PHASE << 1) + 8;
+  if (step > (RESET_OFF_WHEN + 8)) {
+    assert(pCexpected == dut.DEBUG_phase_all);
+  }
+
+  return step < RESET_OFF_WHEN + (PHASE << 1) + 64;
 }
-

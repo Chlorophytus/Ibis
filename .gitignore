@@ -96,3 +96,5 @@ _deps
 configuration.hpp
 build
 .cache
+
+*.log

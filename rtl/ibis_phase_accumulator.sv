@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 `default_nettype none
-// LUT5-conscientious phase accumulator block
+// CARRY4-conscientious phase accumulator block
+// NOTE: Full LUT5/LUT6 utilization seems just for non-CARRY4 tasks
 module ibis_phase_accumulator
  (input wire logic aclk,
   input wire logic aresetn,
@@ -8,43 +9,43 @@ module ibis_phase_accumulator
   input wire logic write_enable,
   input wire logic phase_carry,
   input wire logic phase_reset,
-  input wire logic unsigned [4:0] phase_in,
-  output logic unsigned [4:0] DEBUG_phase,
-  output logic unsigned [4:0] DEBUG_phase_hold,
+  input wire logic unsigned [3:0] phase_in,
+  output logic unsigned [3:0] DEBUG_phase,
+  output logic unsigned [3:0] DEBUG_phase_hold,
   output logic phase_is_zero);
 
-  logic unsigned [4:0] r_phase;
-  logic unsigned [4:0] r_phase_hold;
+  logic unsigned [3:0] r_phase;
+  logic unsigned [3:0] r_phase_in;
 
   // Holds the reset value
-  always_ff @(posedge aclk) begin: ibis_phase_accumulator_write
+  always_ff @(posedge aclk) begin: ibis_phase_accumulator_input
     if(!aresetn) begin
-      r_phase_hold <= 5'b00000;
+      r_phase_in <= 4'b0000;
     end else if(enable & write_enable) begin
-      r_phase_hold <= phase_in;
+      r_phase_in <= phase_in;
     end
-  end: ibis_phase_accumulator_write
+  end: ibis_phase_accumulator_input
 
-  // Decrements the phase accumulator
-  always_ff @(posedge aclk) begin: ibis_phase_accumulator_decrement
+  // Phase accumulator reset/carry/decrement control logic
+  always_ff @(posedge aclk) begin: ibis_phase_accumulator_control
     if(!aresetn) begin
-      r_phase <= 5'b00000;
-    end else if (enable) begin
+      r_phase <= 4'b0000;
+  end else if(enable) begin
       if(phase_reset) begin
-        // When the phase should be reset, it'll reset to the hold value
-        r_phase <= r_phase_hold;
+        // When the phase should be reset, it'll reset to the held value
+        r_phase <= r_phase_in;
       end else if(phase_carry) begin
-        // Carrying will force the phase to all high
-        r_phase <= 5'b11111;
-      end else if((|r_phase)) begin
+        // Since we're unsigned, carrying will force the phase to all high
+        r_phase <= 4'b1111;
+      end else if(|r_phase) begin
         // Decrement the phase accumulator until it is zero
-        r_phase <= r_phase - 5'b00001;
+        r_phase <= r_phase - 4'b0001;
       end
     end
-  end: ibis_phase_accumulator_decrement
+  end: ibis_phase_accumulator_control
 
   assign phase_is_zero = ~|r_phase;
   assign DEBUG_phase = r_phase;
-  assign DEBUG_phase_hold = r_phase_hold;
+  assign DEBUG_phase_hold = r_phase_in;
 endmodule: ibis_phase_accumulator
  
