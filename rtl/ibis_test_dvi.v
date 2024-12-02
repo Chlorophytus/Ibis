@@ -10,25 +10,25 @@ module ibis_test_dvi
   output wire tmds_clk);
 
   wire data_enable;
-  wire vblankn;
-  wire hblankn;
+  wire vblank;
+  wire hblank;
   wire hsync;
   wire vsync;
-  wire [15:0] x;
-  wire [15:0] y;
+  wire [9:0] x;
+  wire [9:0] y;
 
   ibis_vga_timing timing(
     .aclk(aclk),
     .aresetn(aresetn),
     .enable(enable),
     .vsync(vsync),
-    .vblankn(vblankn),
+    .vblank(vblank),
     .hsync(hsync),
-    .hblankn(hblankn),
+    .hblank(hblank),
     .ord_x(x),
     .ord_y(y)
   );
-  assign data_enable = !(vblankn | hblankn);
+  assign data_enable = !(vblank | hblank);
 
   // TMDS Blue channel
   ibis_tmds ibis_tmds_blu(
@@ -68,5 +68,5 @@ module ibis_test_dvi
     .in_parallel(10'b00000_11111),
     .out_serial(tmds_clk)
   );
-endmodule: ibis_test_dvi
+endmodule
  

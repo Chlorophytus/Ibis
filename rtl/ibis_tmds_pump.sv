@@ -27,15 +27,19 @@ module ibis_tmds_pump
   end: ibis_tmds_pump_hold
   
   logic unsigned [1:0] r_parallel_block;
-  always_comb begin: ibis_tmds_pump_10to2
-    priority casez(r_state)
-      5'b00001: r_parallel_block = r_parallel[1:0];
-      5'b0001z: r_parallel_block = r_parallel[3:2];
-      5'b001zz: r_parallel_block = r_parallel[5:4];
-      5'b01zzz: r_parallel_block = r_parallel[7:6];
-      5'b1zzzz: r_parallel_block = r_parallel[9:8];
-      default: ;
-    endcase
+  always_ff @(posedge aclk) begin: ibis_tmds_pump_10to2
+    if(!aresetn) begin
+      r_parallel_block <= 2'b00;
+    end else begin
+      priority casez(r_state)
+        5'b00001: r_parallel_block <= r_parallel[1:0];
+        5'b0001z: r_parallel_block <= r_parallel[3:2];
+        5'b001zz: r_parallel_block <= r_parallel[5:4];
+        5'b01zzz: r_parallel_block <= r_parallel[7:6];
+        5'b1zzzz: r_parallel_block <= r_parallel[9:8];
+        default: ;
+      endcase
+    end
   end: ibis_tmds_pump_10to2
 
   ODDR #(

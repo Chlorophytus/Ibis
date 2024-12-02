@@ -1,26 +1,25 @@
 `timescale 1ns / 1ps
 `default_nettype none
-// CARRY4-conscientious phase accumulator block
-// NOTE: Full LUT5/LUT6 utilization seems just for non-CARRY4 tasks
+// Phase accumulator block, width can be changed
 module ibis_phase_accumulator
+#(parameter WIDTH = 16)
  (input wire logic aclk,
   input wire logic aresetn,
   input wire logic enable,
   input wire logic write_enable,
-  input wire logic phase_carry,
   input wire logic phase_reset,
-  input wire logic unsigned [3:0] phase_in,
-  output logic unsigned [3:0] DEBUG_phase,
-  output logic unsigned [3:0] DEBUG_phase_hold,
+  input wire logic unsigned [WIDTH-1:0] phase_in,
+  output logic unsigned [WIDTH-1:0] DEBUG_phase,
+  output logic unsigned [WIDTH-1:0] DEBUG_phase_hold,
   output logic phase_is_zero);
 
-  logic unsigned [3:0] r_phase;
-  logic unsigned [3:0] r_phase_in;
+  logic unsigned [WIDTH-1:0] r_phase;
+  logic unsigned [WIDTH-1:0] r_phase_in;
 
   // Holds the reset value
   always_ff @(posedge aclk) begin: ibis_phase_accumulator_input
     if(!aresetn) begin
-      r_phase_in <= 4'b0000;
+      r_phase_in <= {WIDTH{1'b0}};
     end else if(enable & write_enable) begin
       r_phase_in <= phase_in;
     end
@@ -29,17 +28,14 @@ module ibis_phase_accumulator
   // Phase accumulator reset/carry/decrement control logic
   always_ff @(posedge aclk) begin: ibis_phase_accumulator_control
     if(!aresetn) begin
-      r_phase <= 4'b0000;
+      r_phase <= '0;
   end else if(enable) begin
       if(phase_reset) begin
         // When the phase should be reset, it'll reset to the held value
         r_phase <= r_phase_in;
-      end else if(phase_carry) begin
-        // Since we're unsigned, carrying will force the phase to all high
-        r_phase <= 4'b1111;
       end else if(|r_phase) begin
         // Decrement the phase accumulator until it is zero
-        r_phase <= r_phase - 4'b0001;
+        r_phase <= r_phase - {({WIDTH-1{1'b0}}), 1'b1};
       end
     end
   end: ibis_phase_accumulator_control

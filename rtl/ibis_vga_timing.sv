@@ -2,17 +2,18 @@
 `default_nettype none
 // https://projectf.io/posts/video-timings-vga-720p-1080p/#vga-640x480-60-hz
 module ibis_vga_timing
+#(parameter WIDTH = 10)
  (input wire logic aclk,
   input wire logic aresetn,
   input wire logic enable,
   // With sync it's the sync pulse, with blank it's when we're sending control
   // codes through TMDS, or rather blanking
   output logic vsync,
-  output logic vblankn,
+  output logic vblank,
   output logic hsync,
-  output logic hblankn,
-  output logic unsigned [15:0] ord_x,
-  output logic unsigned [15:0] ord_y);
+  output logic hblank,
+  output logic unsigned [WIDTH-1:0] ord_x,
+  output logic unsigned [WIDTH-1:0] ord_y);
   // Configure horizontal display timings here
   localparam X_ACTIVE = 640;
   localparam X_FRONT_PORCH = X_ACTIVE + 16;
@@ -34,173 +35,114 @@ module ibis_vga_timing
     end
   end: ibis_vga_timing_statem
 
-  logic unsigned [1:0] r_state_writer;
-
-  always_ff @(posedge aclk) begin: ibis_vga_timing_writer_statem
+  // Counters
+  logic unsigned [WIDTH-1:0] r_x;
+  always_ff @(posedge aclk) begin: ibis_vga_timing_counter_x
     if(!aresetn) begin
-      r_state_writer <= 2'b01;
-    end else if(enable & r_state[4]) begin
-      r_state_writer <= r_state_writer << 1;
+      r_x <= {WIDTH{1'b0}};
+    end else if(enable & r_state[0]) begin
+      if(r_x < X_BACK_PORCH) begin
+        r_x <= r_x + {({WIDTH-1{1'b0}}), 1'b1};
+      end else begin
+        r_x <= {WIDTH{1'b0}};
+      end
     end
-  end: ibis_vga_timing_writer_statem
+  end: ibis_vga_timing_counter_x
+  logic unsigned [WIDTH-1:0] r_y;
+  always_ff @(posedge aclk) begin: ibis_vga_timing_counter_y
+    if(!aresetn) begin
+      r_y <= {WIDTH{1'b0}};
+    end else if(enable & r_state[2] & !(|r_x)) begin
+      if(r_y < Y_BACK_PORCH) begin
+        r_y <= r_y + {({WIDTH-1{1'b0}}), 1'b1};
+      end else begin
+        r_y <= {WIDTH{1'b0}};
+      end
+    end
+  end: ibis_vga_timing_counter_y
 
-  wire logic unsigned [3:0] x_status;
-  wire logic accumulators_enable;
-  assign accumulators_enable = |r_state_writer | r_state[4];
-  ibis_phase_accumulator_quad x_active_acc(
-    .aclk(aclk),
-    .aresetn(aresetn),
-    .enable(enable & accumulators_enable),
-    .write_enable(r_state_writer[0]),
-    .phase_reset(r_state_writer[1] | x_status[3]),
-    .phase_in(X_ACTIVE - 1),
-    .phase_is_zero(x_status[0]),
+  // Lock on to counter results
+  logic unsigned [WIDTH-1:0] r_locked_x;
+  always_ff @(posedge aclk) begin: ibis_vga_timing_lock_x
+    if(!aresetn) begin
+      r_locked_x <= {WIDTH{1'b0}};
+    end else if(enable & r_state[4]) begin
+      r_locked_x <= r_x;
+    end
+  end: ibis_vga_timing_lock_x
 
-    .DEBUG_phase_all(),
-    .DEBUG_phase0(),
-    .DEBUG_phase1(),
-    .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold(),
-    .DEBUG_phase2(),
-    .DEBUG_phase3(),
-    .DEBUG_phase2_hold(),
-    .DEBUG_phase3_hold()
-  );
-  ibis_phase_accumulator_quad x_front_porch_acc(
-    .aclk(aclk),
-    .aresetn(aresetn),
-    .enable(enable & accumulators_enable),
-    .write_enable(r_state_writer[0]),
-    .phase_reset(r_state_writer[1] | x_status[3]),
-    .phase_in(X_FRONT_PORCH - 1),
-    .phase_is_zero(x_status[1]),
-    .DEBUG_phase_all(),
-    .DEBUG_phase0(),
-    .DEBUG_phase1(),
-    .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold(),
-    .DEBUG_phase2(),
-    .DEBUG_phase3(),
-    .DEBUG_phase2_hold(),
-    .DEBUG_phase3_hold()
-  );
-  ibis_phase_accumulator_quad x_sync_acc(
-    .aclk(aclk),
-    .aresetn(aresetn),
-    .enable(enable & accumulators_enable),
-    .write_enable(r_state_writer[0]),
-    .phase_reset(r_state_writer[1] | x_status[3]),
-    .phase_in(X_SYNC_WIDTH - 1),
-    .phase_is_zero(x_status[2]),
-    .DEBUG_phase_all(),
-    .DEBUG_phase0(),
-    .DEBUG_phase1(),
-    .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold(),
-    .DEBUG_phase2(),
-    .DEBUG_phase3(),
-    .DEBUG_phase2_hold(),
-    .DEBUG_phase3_hold()
-  );
-  ibis_phase_accumulator_quad x_back_porch_acc(
-    .aclk(aclk),
-    .aresetn(aresetn),
-    .enable(enable & accumulators_enable),
-    .write_enable(r_state_writer[0]),
-    .phase_reset(r_state_writer[1] | x_status[3]),
-    .phase_in(X_BACK_PORCH - 1),
-    .phase_is_zero(x_status[3]),
-    .DEBUG_phase_all(ord_x),
-    .DEBUG_phase0(),
-    .DEBUG_phase1(),
-    .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold(),
-    .DEBUG_phase2(),
-    .DEBUG_phase3(),
-    .DEBUG_phase2_hold(),
-    .DEBUG_phase3_hold()
-  );
+  logic unsigned [WIDTH-1:0] r_locked_y;
+  always_ff @(posedge aclk) begin: ibis_vga_timing_lock_y
+    if(!aresetn) begin
+      r_locked_y <= {WIDTH{1'b0}};
+    end else if(enable & r_state[4]) begin
+      r_locked_y <= r_y;
+    end
+  end: ibis_vga_timing_lock_y
 
-  wire logic unsigned [3:0] y_status;
-  ibis_phase_accumulator_quad y_active_acc(
-    .aclk(aclk),
-    .aresetn(aresetn),
-    .enable(enable & accumulators_enable & x_status[3]),
-    .write_enable(r_state_writer[0]),
-    .phase_reset(r_state_writer[1] | y_status[3]),
-    .phase_in(Y_ACTIVE - 1),
-    .phase_is_zero(y_status[0]),
-    .DEBUG_phase_all(),
-    .DEBUG_phase0(),
-    .DEBUG_phase1(),
-    .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold(),
-    .DEBUG_phase2(),
-    .DEBUG_phase3(),
-    .DEBUG_phase2_hold(),
-    .DEBUG_phase3_hold()
-  );
-  ibis_phase_accumulator_quad y_front_porch_acc(
-    .aclk(aclk),
-    .aresetn(aresetn),
-    .enable(enable & accumulators_enable & x_status[3]),
-    .write_enable(r_state_writer[0]),
-    .phase_reset(r_state_writer[1] | y_status[3]),
-    .phase_in(Y_FRONT_PORCH - 1),
-    .phase_is_zero(y_status[1]),
-    .DEBUG_phase_all(),
-    .DEBUG_phase0(),
-    .DEBUG_phase1(),
-    .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold(),
-    .DEBUG_phase2(),
-    .DEBUG_phase3(),
-    .DEBUG_phase2_hold(),
-    .DEBUG_phase3_hold()
-  );
-  ibis_phase_accumulator_quad y_sync_acc(
-    .aclk(aclk),
-    .aresetn(aresetn),
-    .enable(enable & accumulators_enable & x_status[3]),
-    .write_enable(r_state_writer[0]),
-    .phase_reset(r_state_writer[1] | y_status[3]),
-    .phase_in(Y_SYNC_WIDTH - 1),
-    .phase_is_zero(y_status[2]),
-    .DEBUG_phase_all(),
-    .DEBUG_phase0(),
-    .DEBUG_phase1(),
-    .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold(),
-    .DEBUG_phase2(),
-    .DEBUG_phase3(),
-    .DEBUG_phase2_hold(),
-    .DEBUG_phase3_hold()
-  );
-  ibis_phase_accumulator_quad y_back_porch_acc(
-    .aclk(aclk),
-    .aresetn(aresetn),
-    .enable(enable & accumulators_enable & x_status[3]),
-    .write_enable(r_state_writer[0]),
-    .phase_reset(r_state_writer[1] | y_status[3]),
-    .phase_in(Y_BACK_PORCH - 1),
-    .phase_is_zero(y_status[3]),
-    .DEBUG_phase_all(ord_y),
-    .DEBUG_phase0(),
-    .DEBUG_phase1(),
-    .DEBUG_phase0_hold(),
-    .DEBUG_phase1_hold(),
-    .DEBUG_phase2(),
-    .DEBUG_phase3(),
-    .DEBUG_phase2_hold(),
-    .DEBUG_phase3_hold()
-  );
+  logic r_do_hsync;
+  logic r_do_vsync;
+
+  logic r_do_hblank;
+  logic r_do_vblank;
+
+  // VSync/HSync logic
+  always_ff @(posedge aclk) begin: ibis_vga_timing_hsync
+    if(!aresetn) begin
+      r_do_hsync <= 1'b1;
+    end else if(r_state[4]) begin
+      case(r_x)
+        {WIDTH{1'b0}}: r_do_hsync <= 1'b1;
+        X_FRONT_PORCH - {({WIDTH-1{1'b0}}), 1'b1}: r_do_hsync <= 1'b0;
+        X_SYNC_WIDTH - {({WIDTH-1{1'b0}}), 1'b1}: r_do_hsync <= 1'b1;
+        default: ;
+      endcase
+    end
+  end: ibis_vga_timing_hsync
+  always_ff @(posedge aclk) begin: ibis_vga_timing_vsync
+    if(!aresetn) begin
+      r_do_vsync <= 1'b1;
+    end else if(r_state[4]) begin
+      case(r_y)
+        {WIDTH{1'b0}}: r_do_vsync <= 1'b1;
+        Y_FRONT_PORCH - {({WIDTH-1{1'b0}}), 1'b1}: r_do_vsync <= 1'b0;
+        Y_SYNC_WIDTH - {({WIDTH-1{1'b0}}), 1'b1}: r_do_vsync <= 1'b1;
+        default: ;
+      endcase
+    end
+  end: ibis_vga_timing_vsync
+  
+  // VBlank/HBlank logic
+  always_ff @(posedge aclk) begin: ibis_vga_timing_hblank
+    if(!aresetn) begin
+      r_do_hblank <= 1'b1;
+    end else if(r_state[4]) begin
+      case(r_x)
+        {WIDTH{1'b0}}: r_do_hblank <= 1'b0;
+        X_ACTIVE - {({WIDTH-1{1'b0}}), 1'b1}: r_do_hblank <= 1'b1;
+        default: ;
+      endcase
+    end
+  end: ibis_vga_timing_hblank
+  always_ff @(posedge aclk) begin: ibis_vga_timing_vblank
+    if(!aresetn) begin
+      r_do_vblank <= 1'b1;
+    end else if(r_state[4]) begin
+      case(r_y)
+        {WIDTH{1'b0}}: r_do_vblank <= 1'b0;
+        Y_ACTIVE - {({WIDTH-1{1'b0}}), 1'b1}: r_do_vblank <= 1'b1;
+        default: ;
+      endcase
+    end
+  end: ibis_vga_timing_vblank
 
   // Both sync pulses are negative
-  // NOTE: We keep track of the X/Y ordinates starting with 0 instead of 1
-  assign hsync = !(x_status[1] & !x_status[2]);
-  assign vsync = !(y_status[1] & !y_status[2]);
+  assign hsync = r_do_hsync;
+  assign vsync = r_do_vsync;
 
-  // NEGATIVE blanking intervals
-  assign hblankn = x_status[0];
-  assign vblankn = y_status[0];
+  assign hblank = r_do_hblank;
+  assign vblank = r_do_vblank;
+
+  assign ord_x = r_locked_x;
+  assign ord_y = r_locked_y;
 endmodule: ibis_vga_timing

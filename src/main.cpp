@@ -28,12 +28,7 @@ int main(int argc, char **argv) {
     tests.emplace_back([&t] {
       t.run<Vibis_phase_accumulator>(
           ibis::test::test_2,
-          "lone 4-bit phase accumulator works properly");
-    });
-    tests.emplace_back([&t] {
-      t.run<Vibis_phase_accumulator_dual>(
-          ibis::test::test_3,
-          "carrying dual 4-bit phase accumulators work properly");
+          "phase accumulator works properly");
     });
     tests.emplace_back([&t] {
       t.run<Vibis_vga_timing>(
@@ -49,11 +44,7 @@ int main(int argc, char **argv) {
           ibis::test::test_6,
           "TMDS encoder doesn't over/under-bias");
     });
-    tests.emplace_back([&t] {
-      t.run<Vibis_phase_accumulator_quad>(
-          ibis::test::test_7,
-          "carrying quad 4-bit phase accumulators work properly");
-    });
+
     while (!tests.empty()) {
       // Verilator doesn't like to single-thread, just do them one at a time.
       tests.front().join();

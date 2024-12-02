@@ -10,7 +10,6 @@ bool test::test_2(const U64 &step, Vibis_phase_accumulator &dut,
   case 0: {
     dut.aresetn = false;
     dut.enable = true;
-    dut.phase_carry = false;
     break;
   }
   case RESET_OFF_WHEN: {
