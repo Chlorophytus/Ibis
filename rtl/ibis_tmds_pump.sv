@@ -18,29 +18,17 @@ module ibis_tmds_pump
     end
   end: ibis_tmds_pump_statem
 
-  always_ff @(posedge aclk) begin: ibis_tmds_pump_hold
+  always_ff @(posedge aclk) begin: ibis_tmds_pump_shift_register
     if(!aresetn) begin
       r_parallel <= 10'b00000_00000;
-    end else if(enable & r_state[0]) begin
-      r_parallel <= in_parallel;
+    end else if(enable) begin
+      if(r_state[0]) begin
+        r_parallel <= in_parallel;
+      end else begin
+        r_parallel <= {2'b00, r_parallel[9:2]};
+      end
     end
-  end: ibis_tmds_pump_hold
-  
-  logic unsigned [1:0] r_parallel_block;
-  always_ff @(posedge aclk) begin: ibis_tmds_pump_10to2
-    if(!aresetn) begin
-      r_parallel_block <= 2'b00;
-    end else begin
-      priority casez(r_state)
-        5'b00001: r_parallel_block <= r_parallel[1:0];
-        5'b0001z: r_parallel_block <= r_parallel[3:2];
-        5'b001zz: r_parallel_block <= r_parallel[5:4];
-        5'b01zzz: r_parallel_block <= r_parallel[7:6];
-        5'b1zzzz: r_parallel_block <= r_parallel[9:8];
-        default: ;
-      endcase
-    end
-  end: ibis_tmds_pump_10to2
+  end: ibis_tmds_pump_shift_register
 
   ODDR #(
     .DDR_CLK_EDGE("SAME_EDGE"), 
@@ -50,8 +38,8 @@ module ibis_tmds_pump
     .Q(out_serial),
     .C(aclk),
     .CE(enable),
-    .D1(r_parallel_block[0]),
-    .D2(r_parallel_block[1]),
+    .D1(r_parallel[0]),
+    .D2(r_parallel[1]),
     .R(!aresetn),
     .S()
   );

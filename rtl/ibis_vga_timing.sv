@@ -12,6 +12,7 @@ module ibis_vga_timing
   output logic vblank,
   output logic hsync,
   output logic hblank,
+  output logic data_enable,
   output logic unsigned [WIDTH-1:0] ord_x,
   output logic unsigned [WIDTH-1:0] ord_y);
   // Configure horizontal display timings here
@@ -25,22 +26,12 @@ module ibis_vga_timing
   localparam Y_SYNC_WIDTH = Y_FRONT_PORCH + 2;
   localparam Y_BACK_PORCH = Y_SYNC_WIDTH + 33;
 
-  // Shift-to-5 state machine to step the clock from TMDS speed to ~25.175MHz
-  logic unsigned [4:0] r_state;
-  always_ff @(posedge aclk) begin: ibis_vga_timing_statem
-    if(!aresetn) begin
-      r_state <= 5'b00001;
-    end else if(enable) begin
-      r_state <= {r_state[3:0], r_state[4]};
-    end
-  end: ibis_vga_timing_statem
-
   // Counters
   logic unsigned [WIDTH-1:0] r_x;
   always_ff @(posedge aclk) begin: ibis_vga_timing_counter_x
     if(!aresetn) begin
       r_x <= {WIDTH{1'b0}};
-    end else if(enable & r_state[0]) begin
+    end else if(enable) begin
       if(r_x < X_BACK_PORCH) begin
         r_x <= r_x + {({WIDTH-1{1'b0}}), 1'b1};
       end else begin
@@ -52,7 +43,7 @@ module ibis_vga_timing
   always_ff @(posedge aclk) begin: ibis_vga_timing_counter_y
     if(!aresetn) begin
       r_y <= {WIDTH{1'b0}};
-    end else if(enable & r_state[2] & !(|r_x)) begin
+    end else if(enable & !(|r_x)) begin
       if(r_y < Y_BACK_PORCH) begin
         r_y <= r_y + {({WIDTH-1{1'b0}}), 1'b1};
       end else begin
@@ -60,25 +51,6 @@ module ibis_vga_timing
       end
     end
   end: ibis_vga_timing_counter_y
-
-  // Lock on to counter results
-  logic unsigned [WIDTH-1:0] r_locked_x;
-  always_ff @(posedge aclk) begin: ibis_vga_timing_lock_x
-    if(!aresetn) begin
-      r_locked_x <= {WIDTH{1'b0}};
-    end else if(enable & r_state[4]) begin
-      r_locked_x <= r_x;
-    end
-  end: ibis_vga_timing_lock_x
-
-  logic unsigned [WIDTH-1:0] r_locked_y;
-  always_ff @(posedge aclk) begin: ibis_vga_timing_lock_y
-    if(!aresetn) begin
-      r_locked_y <= {WIDTH{1'b0}};
-    end else if(enable & r_state[4]) begin
-      r_locked_y <= r_y;
-    end
-  end: ibis_vga_timing_lock_y
 
   logic r_do_hsync;
   logic r_do_vsync;
@@ -90,7 +62,7 @@ module ibis_vga_timing
   always_ff @(posedge aclk) begin: ibis_vga_timing_hsync
     if(!aresetn) begin
       r_do_hsync <= 1'b1;
-    end else if(r_state[4]) begin
+    end else if(enable) begin
       case(r_x)
         {WIDTH{1'b0}}: r_do_hsync <= 1'b1;
         X_FRONT_PORCH - {({WIDTH-1{1'b0}}), 1'b1}: r_do_hsync <= 1'b0;
@@ -102,7 +74,7 @@ module ibis_vga_timing
   always_ff @(posedge aclk) begin: ibis_vga_timing_vsync
     if(!aresetn) begin
       r_do_vsync <= 1'b1;
-    end else if(r_state[4]) begin
+    end else if(enable) begin
       case(r_y)
         {WIDTH{1'b0}}: r_do_vsync <= 1'b1;
         Y_FRONT_PORCH - {({WIDTH-1{1'b0}}), 1'b1}: r_do_vsync <= 1'b0;
@@ -116,7 +88,7 @@ module ibis_vga_timing
   always_ff @(posedge aclk) begin: ibis_vga_timing_hblank
     if(!aresetn) begin
       r_do_hblank <= 1'b1;
-    end else if(r_state[4]) begin
+    end else if(enable) begin
       case(r_x)
         {WIDTH{1'b0}}: r_do_hblank <= 1'b0;
         X_ACTIVE - {({WIDTH-1{1'b0}}), 1'b1}: r_do_hblank <= 1'b1;
@@ -127,7 +99,7 @@ module ibis_vga_timing
   always_ff @(posedge aclk) begin: ibis_vga_timing_vblank
     if(!aresetn) begin
       r_do_vblank <= 1'b1;
-    end else if(r_state[4]) begin
+    end else if(enable) begin
       case(r_y)
         {WIDTH{1'b0}}: r_do_vblank <= 1'b0;
         Y_ACTIVE - {({WIDTH-1{1'b0}}), 1'b1}: r_do_vblank <= 1'b1;
@@ -136,13 +108,25 @@ module ibis_vga_timing
     end
   end: ibis_vga_timing_vblank
 
+  logic r_data_enable;
+  always_ff @(posedge aclk) begin: ibis_vga_timing_data_enable
+    if(!aresetn) begin
+      r_data_enable <= 1'b0;
+    end else if(enable) begin
+      if((r_x < X_ACTIVE) & (r_y < Y_ACTIVE)) begin
+        r_data_enable <= 1'b1;
+      end else begin
+        r_data_enable <= 1'b0;
+      end
+    end
+  end: ibis_vga_timing_data_enable
+
   // Both sync pulses are negative
+  assign ord_x = r_x;
+  assign ord_y = r_y;
   assign hsync = r_do_hsync;
   assign vsync = r_do_vsync;
-
   assign hblank = r_do_hblank;
   assign vblank = r_do_vblank;
-
-  assign ord_x = r_locked_x;
-  assign ord_y = r_locked_y;
+  assign data_enable = r_data_enable;
 endmodule: ibis_vga_timing

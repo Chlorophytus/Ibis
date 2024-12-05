@@ -1,7 +1,8 @@
 `timescale 1ns / 1ps
 `default_nettype none
 module ibis_test_dvi
- (input wire aclk,
+ (input wire aclk, // 125.875 MHz
+  input wire tclk, //  25.175 MHz
   input wire aresetn,
   input wire enable,
   output wire tmds_red,
@@ -16,19 +17,32 @@ module ibis_test_dvi
   wire vsync;
   wire [9:0] x;
   wire [9:0] y;
+  wire [7:0] red;
+  wire [7:0] grn;
+  wire [7:0] blu;
 
   ibis_vga_timing timing(
-    .aclk(aclk),
+    .aclk(tclk),
     .aresetn(aresetn),
     .enable(enable),
     .vsync(vsync),
     .vblank(vblank),
     .hsync(hsync),
     .hblank(hblank),
+    .data_enable(data_enable),
     .ord_x(x),
     .ord_y(y)
   );
-  assign data_enable = !(vblank | hblank);
+  ibis_vga_pattern pattern(
+   .aclk(tclk),
+   .aresetn(aresetn),
+   .enable(enable),
+   .ord_x(x),
+   .ord_y(y),
+   .red(red),
+   .grn(grn),
+   .blu(blu)
+  );
 
   // TMDS Blue channel
   ibis_tmds ibis_tmds_blu(
@@ -37,7 +51,7 @@ module ibis_test_dvi
     .enable(enable),
     .data_enable(data_enable),
     .control({vsync, hsync}),
-    .data(x[7:0] ^ y[7:0]),
+    .data(blu),
     .out_serial(tmds_blu)
   );
   // TMDS Green channel
@@ -47,7 +61,7 @@ module ibis_test_dvi
     .enable(enable),
     .data_enable(data_enable),
     .control(2'b00),
-    .data(y[7:0]),
+    .data(grn),
     .out_serial(tmds_grn)
   );
   // TMDS Red channel
@@ -57,7 +71,7 @@ module ibis_test_dvi
     .enable(enable),
     .data_enable(data_enable),
     .control(2'b00),
-    .data(x[7:0]),
+    .data(red),
     .out_serial(tmds_red)
   );
   // TMDS is rising-edge clock

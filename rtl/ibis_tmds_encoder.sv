@@ -42,13 +42,13 @@ module ibis_tmds_encoder
 
   assign w_use_xnor = (w_ones > 4'h4) | ((w_ones == 4'h4) & (~data[0]));
   assign w_i[0] = data[0];
-  assign w_i[1] = (w_use_xnor ? (~(w_i[0] ^ data[1])) : (w_i[0] ^ data[1]));
-  assign w_i[2] = (w_use_xnor ? (~(w_i[1] ^ data[2])) : (w_i[1] ^ data[2]));
-  assign w_i[3] = (w_use_xnor ? (~(w_i[2] ^ data[3])) : (w_i[2] ^ data[3]));
-  assign w_i[4] = (w_use_xnor ? (~(w_i[3] ^ data[4])) : (w_i[3] ^ data[4]));
-  assign w_i[5] = (w_use_xnor ? (~(w_i[4] ^ data[5])) : (w_i[4] ^ data[5]));
-  assign w_i[6] = (w_use_xnor ? (~(w_i[5] ^ data[6])) : (w_i[5] ^ data[6]));
-  assign w_i[7] = (w_use_xnor ? (~(w_i[6] ^ data[7])) : (w_i[6] ^ data[7]));
+  assign w_i[1] = (w_use_xnor ? (w_i[0] ~^ data[1]) : (w_i[0] ^ data[1]));
+  assign w_i[2] = (w_use_xnor ? (w_i[1] ~^ data[2]) : (w_i[1] ^ data[2]));
+  assign w_i[3] = (w_use_xnor ? (w_i[2] ~^ data[3]) : (w_i[2] ^ data[3]));
+  assign w_i[4] = (w_use_xnor ? (w_i[3] ~^ data[4]) : (w_i[3] ^ data[4]));
+  assign w_i[5] = (w_use_xnor ? (w_i[4] ~^ data[5]) : (w_i[4] ^ data[5]));
+  assign w_i[6] = (w_use_xnor ? (w_i[5] ~^ data[6]) : (w_i[5] ^ data[6]));
+  assign w_i[7] = (w_use_xnor ? (w_i[6] ~^ data[7]) : (w_i[6] ^ data[7]));
   assign w_i[8] = ~w_use_xnor;
 
   ibis_popcnt6 i_ones_7to4(
