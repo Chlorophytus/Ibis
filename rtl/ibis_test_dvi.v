@@ -2,7 +2,6 @@
 `default_nettype none
 module ibis_test_dvi
  (input wire aclk, // 125.875 MHz
-  input wire tclk, //  25.175 MHz
   input wire aresetn,
   input wire enable,
   output wire tmds_red,
@@ -22,7 +21,7 @@ module ibis_test_dvi
   wire [7:0] blu;
 
   ibis_vga_timing timing(
-    .aclk(tclk),
+    .aclk(aclk),
     .aresetn(aresetn),
     .enable(enable),
     .vsync(vsync),
@@ -34,7 +33,7 @@ module ibis_test_dvi
     .ord_y(y)
   );
   ibis_vga_pattern pattern(
-   .aclk(tclk),
+   .aclk(aclk),
    .aresetn(aresetn),
    .enable(enable),
    .ord_x(x),

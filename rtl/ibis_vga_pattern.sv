@@ -11,11 +11,20 @@ module ibis_vga_pattern
   output logic unsigned [7:0] grn,
   output logic unsigned [7:0] blu);
 
+  logic unsigned [4:0] r_state;
+  always_ff @(posedge aclk) begin: ibis_vga_pattern_statem
+    if(!aresetn) begin
+      r_state <= 5'b00001;
+    end else if(enable) begin
+      r_state <= {r_state[3:0], r_state[4]};
+    end
+  end: ibis_vga_pattern_statem
+
   logic unsigned [WIDTH-1:0] r_x;
   always_ff @(posedge aclk) begin
     if(!aresetn) begin
       r_x <= {WIDTH{1'b0}};
-    end else if(enable) begin
+    end else if(enable & r_state[4]) begin
       r_x <= ord_x;
     end
   end
@@ -24,7 +33,7 @@ module ibis_vga_pattern
   always_ff @(posedge aclk) begin
     if(!aresetn) begin
       r_y <= {WIDTH{1'b0}};
-    end else if(enable) begin
+    end else if(enable & r_state[4]) begin
       r_y <= ord_y;
     end
   end
@@ -35,7 +44,7 @@ module ibis_vga_pattern
   always_ff @(posedge aclk) begin
     if(!aresetn) begin
       r_red <= 8'h00;
-    end else if(enable) begin
+    end else if(enable & r_state[4]) begin
       r_red <= r_x[7:0];
     end
   end
@@ -44,7 +53,7 @@ module ibis_vga_pattern
   always_ff @(posedge aclk) begin
     if(!aresetn) begin
       r_grn <= 8'h00;
-    end else if(enable) begin
+    end else if(enable & r_state[4]) begin
       r_grn <= r_y[7:0];
     end
   end
@@ -53,7 +62,7 @@ module ibis_vga_pattern
   always_ff @(posedge aclk) begin
     if(!aresetn) begin
       r_blu <= 8'h00;
-    end else if(enable) begin
+    end else if(enable & r_state[4]) begin
       r_blu <= r_x[7:0] ^ r_y[7:0];
     end
   end

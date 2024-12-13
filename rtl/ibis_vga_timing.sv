@@ -26,12 +26,21 @@ module ibis_vga_timing
   localparam Y_SYNC_WIDTH = Y_FRONT_PORCH + 2;
   localparam Y_BACK_PORCH = Y_SYNC_WIDTH + 33;
 
+  logic unsigned [4:0] r_state;
+  always_ff @(posedge aclk) begin: ibis_vga_timing_statem
+    if(!aresetn) begin
+      r_state <= 5'b00001;
+    end else if(enable) begin
+      r_state <= {r_state[3:0], r_state[4]};
+    end
+  end: ibis_vga_timing_statem
+
   // Counters
   logic unsigned [WIDTH-1:0] r_x;
   always_ff @(posedge aclk) begin: ibis_vga_timing_counter_x
     if(!aresetn) begin
       r_x <= {WIDTH{1'b0}};
-    end else if(enable) begin
+    end else if(enable & r_state[4]) begin
       if(r_x < X_BACK_PORCH) begin
         r_x <= r_x + {({WIDTH-1{1'b0}}), 1'b1};
       end else begin
@@ -43,7 +52,7 @@ module ibis_vga_timing
   always_ff @(posedge aclk) begin: ibis_vga_timing_counter_y
     if(!aresetn) begin
       r_y <= {WIDTH{1'b0}};
-    end else if(enable & !(|r_x)) begin
+    end else if(enable & r_state[4] & !(|r_x)) begin
       if(r_y < Y_BACK_PORCH) begin
         r_y <= r_y + {({WIDTH-1{1'b0}}), 1'b1};
       end else begin
@@ -62,7 +71,7 @@ module ibis_vga_timing
   always_ff @(posedge aclk) begin: ibis_vga_timing_hsync
     if(!aresetn) begin
       r_do_hsync <= 1'b1;
-    end else if(enable) begin
+    end else if(enable & r_state[4]) begin
       case(r_x)
         {WIDTH{1'b0}}: r_do_hsync <= 1'b1;
         X_FRONT_PORCH - {({WIDTH-1{1'b0}}), 1'b1}: r_do_hsync <= 1'b0;
@@ -74,7 +83,7 @@ module ibis_vga_timing
   always_ff @(posedge aclk) begin: ibis_vga_timing_vsync
     if(!aresetn) begin
       r_do_vsync <= 1'b1;
-    end else if(enable) begin
+    end else if(enable & r_state[4]) begin
       case(r_y)
         {WIDTH{1'b0}}: r_do_vsync <= 1'b1;
         Y_FRONT_PORCH - {({WIDTH-1{1'b0}}), 1'b1}: r_do_vsync <= 1'b0;
@@ -88,7 +97,7 @@ module ibis_vga_timing
   always_ff @(posedge aclk) begin: ibis_vga_timing_hblank
     if(!aresetn) begin
       r_do_hblank <= 1'b1;
-    end else if(enable) begin
+    end else if(enable & r_state[4]) begin
       case(r_x)
         {WIDTH{1'b0}}: r_do_hblank <= 1'b0;
         X_ACTIVE - {({WIDTH-1{1'b0}}), 1'b1}: r_do_hblank <= 1'b1;
@@ -99,7 +108,7 @@ module ibis_vga_timing
   always_ff @(posedge aclk) begin: ibis_vga_timing_vblank
     if(!aresetn) begin
       r_do_vblank <= 1'b1;
-    end else if(enable) begin
+    end else if(enable & r_state[4]) begin
       case(r_y)
         {WIDTH{1'b0}}: r_do_vblank <= 1'b0;
         Y_ACTIVE - {({WIDTH-1{1'b0}}), 1'b1}: r_do_vblank <= 1'b1;
@@ -112,7 +121,7 @@ module ibis_vga_timing
   always_ff @(posedge aclk) begin: ibis_vga_timing_data_enable
     if(!aresetn) begin
       r_data_enable <= 1'b0;
-    end else if(enable) begin
+    end else if(enable & r_state[4]) begin
       if((r_x < X_ACTIVE) & (r_y < Y_ACTIVE)) begin
         r_data_enable <= 1'b1;
       end else begin
