@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.26)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Project instantiation
-project(ibis VERSION 0.1.0.16)
+project(ibis VERSION 0.1.0.17)
 
 # Find Verilator package
 find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
@@ -31,8 +31,10 @@ verilate(${PROJECT_NAME} PREFIX Vibis_vga_timing SOURCES
   rtl/ibis_vga_timing.sv)
 verilate(${PROJECT_NAME} PREFIX Vibis_popcnt6 SOURCES
   rtl/ibis_popcnt6.sv)
+verilate(${PROJECT_NAME} PREFIX Vibis_forward_mapper SOURCES
+  rtl/ibis_forward_mapper.sv)
 
-# Use C++20 on target too
+# Use C++23 on target too
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED TRUE)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
 
