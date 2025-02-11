@@ -31,8 +31,8 @@ bool test::test_4(const U64 &step, Vibis_vga_timing &dut,
   }
 
   con::listener::debug(description, ": (", step, ") Vsync: ", dut.vsync,
-                       " VblankN: ", dut.vblankn, " Hsync: ", dut.hsync,
-                       " HblankN: ", dut.hblankn, " X: ", dut.ord_x, " Y ",
+                       " Vblank: ", dut.vblank, " Hsync: ", dut.hsync,
+                       " Hblank: ", dut.hblank, " X: ", dut.ord_x, " Y ",
                        dut.ord_y);
   return step < RESET_OFF_WHEN + (800 * 525 * 10);
 }

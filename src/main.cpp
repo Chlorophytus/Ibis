@@ -22,15 +22,6 @@ int main(int argc, char **argv) {
 
     // Test cases...
     tests.emplace_back([&t] {
-      t.run<Vibis_ripple_carry>(ibis::test::test_1,
-                                "2-bit ripple-carry works properly");
-    });
-    tests.emplace_back([&t] {
-      t.run<Vibis_phase_accumulator>(
-          ibis::test::test_2,
-          "phase accumulator works properly");
-    });
-    tests.emplace_back([&t] {
       t.run<Vibis_vga_timing>(
           ibis::test::test_4,
           "VGA timings work properly");

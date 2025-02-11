@@ -1,8 +1,6 @@
 #pragma once
 #include "Vibis_tmds_encoder.h"
 #include "Vibis_vga_timing.h"
-#include "Vibis_ripple_carry.h"
-#include "Vibis_phase_accumulator.h"
 #include "Vibis_popcnt6.h"
 #include "configuration.hpp"
 #include "verilated.h"
