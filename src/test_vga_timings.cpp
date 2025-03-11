@@ -2,8 +2,8 @@
 #include "con.hpp"
 using namespace ibis;
 
-bool test::test_4(const U64 &step, Vibis_vga_timing &dut,
-                  const std::string &description) {
+bool test::test_vga_timings(const U64 &step, Vibis_vga_timing &dut,
+                            const std::string &description) {
   constexpr auto RESET_OFF_WHEN = 16;
   switch (step) {
   case 0: {
@@ -23,10 +23,11 @@ bool test::test_4(const U64 &step, Vibis_vga_timing &dut,
   dut.aclk = (step % 2) == 0;
   dut.eval();
 
-  if(dut.ord_x == 0) {
-    con::listener::debug(description, ": (", step, ") x ordinate is zero, y is ", dut.ord_y);
+  if (dut.ord_x == 0) {
+    con::listener::debug(description, ": (", step,
+                         ") x ordinate is zero, y is ", dut.ord_y);
   }
-  if(dut.ord_y == 0) {
+  if (dut.ord_y == 0) {
     con::listener::debug(description, ": (", step, ") y ordinate is zero");
   }
 

@@ -6,7 +6,8 @@ namespace ibis {
 namespace test {
 using step_t = U64;
 template <typename D>
-using run_func_t = std::function<bool(const step_t &, D &, const std::string &)>;
+using run_func_t =
+    std::function<bool(const step_t &, D &, const std::string &)>;
 /// @brief A class for testing Verilog designs
 class tester {
   std::shared_ptr<VerilatedContext> _context;
@@ -14,7 +15,7 @@ class tester {
 public:
   template <typename D>
   void run(run_func_t<D> &&func, std::string &&_description) {
-		const auto description = _description;
+    const auto description = _description;
     con::listener::informational(description, ": Starting test");
     step_t _step = 0;
     run_func_t<D> _func = func;
@@ -34,8 +35,10 @@ public:
   tester &operator=(const tester &) = delete;
   tester &operator=(tester &&) = delete;
 };
-bool test_4(const U64 &, Vibis_vga_timing &, const std::string &);
-bool test_5(const U64 &, Vibis_popcnt6 &, const std::string &);
-bool test_6(const U64 &, Vibis_tmds_encoder &, const std::string &);
+bool test_vga_timings(const U64 &, Vibis_vga_timing &, const std::string &);
+bool test_popcnt(const U64 &, Vibis_popcnt6 &, const std::string &);
+bool test_tmds_disparity(const U64 &, Vibis_tmds_encoder &,
+                         const std::string &);
+bool test_forward_mapper(const U64 &, Vibis_forward_mapper &, const std::string &);
 } // namespace test
 } // namespace ibis

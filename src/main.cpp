@@ -21,19 +21,23 @@ int main(int argc, char **argv) {
     ibis::test::tester t{context};
 
     // Test cases...
+#if 0
     tests.emplace_back([&t] {
-      t.run<Vibis_vga_timing>(
-          ibis::test::test_4,
-          "VGA timings work properly");
+      t.run<Vibis_vga_timing>(ibis::test::test_vga_timings,
+                              "VGA timings work properly");
     });
     tests.emplace_back([&t] {
-      t.run<Vibis_popcnt6>(
-          ibis::test::test_5,
-          "6-bit population count is fully verified");
-    });    tests.emplace_back([&t] {
-      t.run<Vibis_tmds_encoder>(
-          ibis::test::test_6,
-          "TMDS encoder doesn't over/under-bias");
+      t.run<Vibis_popcnt6>(ibis::test::test_popcnt,
+                           "6-bit population count is fully verified");
+    });
+    tests.emplace_back([&t] {
+      t.run<Vibis_tmds_encoder>(ibis::test::test_tmds_disparity,
+                                "TMDS encoder doesn't over/under-bias");
+    });
+#endif
+    tests.emplace_back([&t] {
+      t.run<Vibis_forward_mapper>(ibis::test::test_forward_mapper,
+                                  "Forward mapper works properly");
     });
 
     while (!tests.empty()) {

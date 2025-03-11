@@ -1,24 +1,24 @@
 `timescale 1ns / 1ps
 `default_nettype none
-// 10-stage forward mapper
+// 10-stage forward mapper for texture addressing
 module ibis_forward_mapper
 #(parameter TILE_SIZE_POW2 = 5,
   parameter WIDTH = 10)
  (input wire logic aclk,
   input wire logic aresetn,
   input wire logic enable,
-  input wire logic unsigned [3:0] write_matrix,
-  input wire logic write_texels,
+  input wire logic unsigned [5:0] write_matrix,
   input wire logic unsigned [WIDTH - 1:0] x,
   input wire logic unsigned [WIDTH - 1:0] y,
   input wire logic signed [11:0] texture_matrixA,
   input wire logic signed [11:0] texture_matrixB,
   input wire logic signed [11:0] texture_matrixC,
   input wire logic signed [11:0] texture_matrixD,
-  input wire logic unsigned [(TILE_SIZE_POW2 * 2) - 1:0] in_address,
-  input wire logic unsigned [8:0] in_data,
-  output logic unsigned [8:0] out_data,
-  output logic cycle_complete);
+  input wire logic unsigned [WIDTH-1:0] texture_translateX,
+  input wire logic unsigned [WIDTH-1:0] texture_translateY,
+  output logic unsigned [(TILE_SIZE_POW2 * 2) - 1:0] map_address,
+  output logic stencil_test,
+  output logic ready);
   // ==========================================================================
   // 10-stage r_state machine
   // ==========================================================================
@@ -30,11 +30,10 @@ module ibis_forward_mapper
       r_state <= {r_state[8:0], r_state[9]};
     end
   end: ibis_forward_mapper_statem
-  assign cycle_complete = r_state[9];
   // ==========================================================================
   // First cycle will lock on the texture matrix.
   // ==========================================================================
-  logic signed [11:0] r_texture_matrix[6];
+  logic signed [11:0] r_texture_matrix[8];
   always_ff @(posedge aclk) begin: ibis_forward_mapper_hold_A
     if(!aresetn) begin
       r_texture_matrix[0] <= 12'sh010;
@@ -63,15 +62,30 @@ module ibis_forward_mapper
       r_texture_matrix[3] <= texture_matrixD;
     end
   end: ibis_forward_mapper_hold_D
+  // Translations
+   always_ff @(posedge aclk) begin: ibis_forward_mapper_hold_Tx
+    if(!aresetn) begin
+      r_texture_matrix[4] <= 12'sh000;
+    end else if(enable & write_matrix[4] & r_state[0]) begin
+      r_texture_matrix[4] <= {1'b0, texture_translateX[6:0], 4'h0};
+    end
+  end: ibis_forward_mapper_hold_Tx
+  always_ff @(posedge aclk) begin: ibis_forward_mapper_hold_Ty
+    if(!aresetn) begin
+      r_texture_matrix[5] <= 12'sh000;
+    end else if(enable & write_matrix[5] & r_state[0]) begin
+      r_texture_matrix[5] <= {1'b0, texture_translateY[6:0], 4'h0};
+    end
+  end: ibis_forward_mapper_hold_Ty
   // Hold on to X and Y for now, these ought to not be signed.
   always_ff @(posedge aclk) begin: ibis_forward_mapper_hold_X
     if(enable & r_state[0]) begin
-      r_texture_matrix[4] <= {1'b0, x[6:0], 4'h0};
+      r_texture_matrix[6] <= {1'b0, x[6:0], 4'h0};
     end
   end: ibis_forward_mapper_hold_X
   always_ff @(posedge aclk) begin: ibis_forward_mapper_hold_Y
     if(enable & r_state[0]) begin
-      r_texture_matrix[5] <= {1'b0, y[6:0], 4'h0};
+      r_texture_matrix[7] <= {1'b0, y[6:0], 4'h0};
     end
   end: ibis_forward_mapper_hold_Y
   // ==========================================================================
@@ -91,75 +105,78 @@ module ibis_forward_mapper
     if(!aresetn) begin
       r_intermediaries[0] <= 24'sh000_000;
     end else if(enable & r_state[2]) begin
-      r_intermediaries[0] <= r_texture_matrix[0] * r_texture_matrix[4];
+      r_intermediaries[0] <= r_texture_matrix[0] * r_texture_matrix[6];
     end
   end: ibis_forward_mapper_calc_Ax
   always_ff @(posedge aclk) begin: ibis_forward_mapper_calc_By
     if(!aresetn) begin
       r_intermediaries[1] <= 24'sh000_000;
     end else if(enable & r_state[4]) begin
-      r_intermediaries[1] <= r_texture_matrix[1] * r_texture_matrix[5];
+      r_intermediaries[1] <= r_texture_matrix[1] * r_texture_matrix[7];
     end
   end: ibis_forward_mapper_calc_By
   always_ff @(posedge aclk) begin: ibis_forward_mapper_calc_Cx
     if(!aresetn) begin
       r_intermediaries[2] <= 24'sh000_000;
     end else if(enable & r_state[2]) begin
-      r_intermediaries[2] <= r_texture_matrix[2] * r_texture_matrix[4];
+      r_intermediaries[2] <= r_texture_matrix[2] * r_texture_matrix[6];
     end
   end: ibis_forward_mapper_calc_Cx
   always_ff @(posedge aclk) begin: ibis_forward_mapper_calc_Dy
     if(!aresetn) begin
       r_intermediaries[3] <= 24'sh000_000;
     end else if(enable & r_state[4]) begin
-      r_intermediaries[3] <= r_texture_matrix[3] * r_texture_matrix[5];
+      r_intermediaries[3] <= r_texture_matrix[3] * r_texture_matrix[7];
     end
   end: ibis_forward_mapper_calc_Dy
   // ==========================================================================
   // Final sums
   // ==========================================================================
   logic signed [23:0] r_final_sums[2];
+  logic unsigned [1:0] r_stencil;
   always_ff @(posedge aclk) begin: ibis_forward_mapper_calc_Xp
     if(!aresetn) begin
       r_final_sums[0] <= 24'sh000_000;
     end else if(enable & r_state[5]) begin
-      r_final_sums[0] <= r_intermediaries[0] + r_intermediaries[1];
+      r_final_sums[0] <= (r_intermediaries[0] + r_intermediaries[1]) - 
+        ({r_texture_matrix[4][11], 12'sh000, r_texture_matrix[4][10:0]} <<< 12);
     end
   end: ibis_forward_mapper_calc_Xp
+  always_ff @(posedge aclk) begin: ibis_forward_mapper_stencilX
+    if(!aresetn) begin
+      r_stencil[0] <= 1'b0;
+    end else if(enable & r_state[6]) begin
+      r_stencil[0] <= ~|(r_final_sums[0][TILE_SIZE_POW2 + 11:12]);
+    end
+  end: ibis_forward_mapper_stencilX
   always_ff @(posedge aclk) begin: ibis_forward_mapper_calc_Yp
     if(!aresetn) begin
       r_final_sums[1] <= 24'sh000_000;
     end else if(enable & r_state[7]) begin
-      r_final_sums[1] <= r_intermediaries[2] + r_intermediaries[3];
+      r_final_sums[1] <= (r_intermediaries[2] + r_intermediaries[3]) -
+        ({r_texture_matrix[5][11], 12'sh000, r_texture_matrix[5][10:0]} <<< 12);
     end
   end: ibis_forward_mapper_calc_Yp
+  always_ff @(posedge aclk) begin: ibis_forward_mapper_stencilY
+    if(!aresetn) begin
+      r_stencil[1] <= 1'b0;
+    end else if(enable & r_state[8]) begin
+      r_stencil[1] <= ~|(r_final_sums[1][TILE_SIZE_POW2 + 11:12]);
+    end
+  end: ibis_forward_mapper_stencilY
   // ==========================================================================
   // Texture memory access
   // ==========================================================================
-  logic unsigned [8:0] texture_memory[1 << (TILE_SIZE_POW2 * 2)];
-  logic unsigned [(TILE_SIZE_POW2 * 2) - 1:0] r_address_write;
-  logic unsigned [(TILE_SIZE_POW2 * 2) - 1:0] r_address_read;
-  logic unsigned [8:0] r_texture_read;
-  always_ff @(posedge aclk) begin: ibis_forward_mapper_tmem_address
-    if(enable) begin
-      if(write_texels & r_state[0]) begin
-        r_address_write <= in_address;
-      end else if(r_state[8]) begin
-        r_address_read <= {
-          r_final_sums[1][TILE_SIZE_POW2 + 3:4],
-          r_final_sums[0][TILE_SIZE_POW2 + 3:4]
-        };
-      end
-    end
-  end: ibis_forward_mapper_tmem_address
-  always_ff @(posedge aclk) begin: ibis_forward_mapper_tmem_data
+  logic unsigned [(TILE_SIZE_POW2 * 2) - 1:0] r_map_address;
+  always_ff @(posedge aclk) begin: ibis_forward_mapper_address
     if(enable & r_state[9]) begin
-      if(write_texels) begin
-        texture_memory[r_address_write] <= in_data;
-      end else begin
-        r_texture_read <= texture_memory[r_address_read];
-      end
+      r_map_address <= {
+        r_final_sums[1][TILE_SIZE_POW2 + 7:8],
+        r_final_sums[0][TILE_SIZE_POW2 + 7:8]
+      };
     end
-  end: ibis_forward_mapper_tmem_data
-  assign out_data = r_texture_read;
+  end: ibis_forward_mapper_address
+  assign map_address = r_map_address;
+  assign ready = r_state[9];
+  assign stencil_test = &r_stencil;
 endmodule: ibis_forward_mapper

@@ -6,8 +6,8 @@ static std::unique_ptr<std::vector<F32>> ptr_qs{nullptr};
 static std::unique_ptr<std::mt19937> ptr_rng{nullptr};
 static std::uniform_int_distribution<U8> gen(0, 255);
 
-bool test::test_6(const U64 &step, Vibis_tmds_encoder &dut,
-                  const std::string &description) {
+bool test::test_tmds_disparity(const U64 &step, Vibis_tmds_encoder &dut,
+                               const std::string &description) {
   constexpr auto RESET_OFF_WHEN = 16;
   constexpr auto ITERATIONS = 1024;
   constexpr auto FINISH = RESET_OFF_WHEN + (ITERATIONS << 1);
