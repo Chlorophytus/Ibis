@@ -2,7 +2,7 @@
 #include "Vibis_tmds_encoder.h"
 #include "Vibis_vga_timing.h"
 #include "Vibis_popcnt6.h"
-#include "Vibis_forward_mapper.h"
+#include "Vibis_texture_mapper.h"
 #include "configuration.hpp"
 #include "verilated.h"
 #include <bits/stdc++.h>

@@ -31,8 +31,8 @@ verilate(${PROJECT_NAME} PREFIX Vibis_vga_timing SOURCES
   rtl/ibis_vga_timing.sv)
 verilate(${PROJECT_NAME} PREFIX Vibis_popcnt6 SOURCES
   rtl/ibis_popcnt6.sv)
-verilate(${PROJECT_NAME} PREFIX Vibis_forward_mapper SOURCES
-  rtl/ibis_forward_mapper.sv)
+verilate(${PROJECT_NAME} PREFIX Vibis_texture_mapper SOURCES
+  rtl/ibis_texture_mapper.sv)
 
 # Use C++23 on target too
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED TRUE)

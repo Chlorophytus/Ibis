@@ -39,6 +39,6 @@ bool test_vga_timings(const U64 &, Vibis_vga_timing &, const std::string &);
 bool test_popcnt(const U64 &, Vibis_popcnt6 &, const std::string &);
 bool test_tmds_disparity(const U64 &, Vibis_tmds_encoder &,
                          const std::string &);
-bool test_forward_mapper(const U64 &, Vibis_forward_mapper &, const std::string &);
+bool test_texture_mapper(const U64 &, Vibis_texture_mapper &, const std::string &);
 } // namespace test
 } // namespace ibis

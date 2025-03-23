@@ -36,8 +36,8 @@ int main(int argc, char **argv) {
     });
 #endif
     tests.emplace_back([&t] {
-      t.run<Vibis_forward_mapper>(ibis::test::test_forward_mapper,
-                                  "Forward mapper works properly");
+      t.run<Vibis_texture_mapper>(ibis::test::test_texture_mapper,
+                                  "Texture mapper works properly");
     });
 
     while (!tests.empty()) {
