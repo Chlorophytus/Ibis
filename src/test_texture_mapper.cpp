@@ -8,7 +8,7 @@ static U64 offset_step = 0;
 
 U16 convert_to_s12(F64 pattern) {
   U16 converted = std::abs(pattern * (1 << 7));
-  if(std::signbit(pattern)) {
+  if (std::signbit(pattern)) {
     converted = ~converted + 1;
   }
   return converted >> 3;
@@ -18,7 +18,7 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
                                const std::string &description) {
   constexpr auto RESET_OFF_WHEN = 16;
   constexpr auto X_WIDTH = 40;
-  constexpr auto Y_WIDTH = 24;
+  constexpr auto Y_WIDTH = 40;
 
   switch (step) {
   case 0: {
@@ -78,6 +78,10 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
         con::listener::debug(description, ": (", step, ") | ",
                              ptr_stream->str());
         ptr_stream = std::make_unique<std::stringstream>();
+        if (y == (Y_WIDTH - 1)) {
+          con::listener::debug(description, ": (", step,
+                               ") | NEXT ROTATION MATRIX");
+        }
       }
       break;
     }
@@ -91,5 +95,5 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
                          ") - ready finally asserted");
   }
   dut.eval();
-  return num_patterns < 16;
+  return num_patterns < 9;
 }
