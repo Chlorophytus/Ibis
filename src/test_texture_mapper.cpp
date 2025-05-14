@@ -6,8 +6,8 @@ static F64 current_pattern = 0.0f;
 static U32 num_patterns = 0;
 static U64 offset_step = 0;
 
-U16 convert_to_s12(F64 pattern) {
-  U16 converted = std::abs(pattern) * 128.0;
+U32 convert_to_fixed(F64 pattern) {
+  U32 converted = std::abs(pattern) * 128.0;
   if (std::signbit(pattern)) {
     converted = ~converted;
     converted++;
@@ -30,12 +30,12 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
   }
   case RESET_OFF_WHEN: {
     dut.aresetn = true;
-    dut.texture_translateX = convert_to_s12(20);
-    dut.texture_translateY = convert_to_s12(20);
-    dut.texture_matrixA = convert_to_s12(std::cos(0));
-    dut.texture_matrixB = convert_to_s12(-std::sin(0));
-    dut.texture_matrixC = convert_to_s12(std::sin(0));
-    dut.texture_matrixD = convert_to_s12(std::cos(0));
+    dut.texture_translateX = convert_to_fixed(20);
+    dut.texture_translateY = convert_to_fixed(20);
+    dut.texture_matrixA = convert_to_fixed(std::cos(0));
+    dut.texture_matrixB = convert_to_fixed(-std::sin(0));
+    dut.texture_matrixC = convert_to_fixed(std::sin(0));
+    dut.texture_matrixD = convert_to_fixed(std::cos(0));
     dut.write_matrix =
         (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5);
 
@@ -59,10 +59,10 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
     switch ((step - offset_step) % 40) {
     case 0: {
       if (x == 0 && y == 0) {
-        dut.texture_matrixA = convert_to_s12(std::cos(current_pattern));
-        dut.texture_matrixB = convert_to_s12(-std::sin(current_pattern));
-        dut.texture_matrixC = convert_to_s12(std::sin(current_pattern));
-        dut.texture_matrixD = convert_to_s12(std::cos(current_pattern));
+        dut.texture_matrixA = convert_to_fixed(std::cos(current_pattern));
+        dut.texture_matrixB = convert_to_fixed(-std::sin(current_pattern));
+        dut.texture_matrixC = convert_to_fixed(std::sin(current_pattern));
+        dut.texture_matrixD = convert_to_fixed(std::cos(current_pattern));
         dut.write_matrix = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
         current_pattern += std::numbers::pi / 16.0;
         num_patterns++;
