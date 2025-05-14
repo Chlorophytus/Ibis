@@ -14,8 +14,8 @@ module ibis_texture_mapper
   input wire logic signed [11:0] texture_matrixB,
   input wire logic signed [11:0] texture_matrixC,
   input wire logic signed [11:0] texture_matrixD,
-  input wire logic unsigned [WIDTH-1:0] texture_translateX,
-  input wire logic unsigned [WIDTH-1:0] texture_translateY,
+  input wire logic signed [11:0] texture_translateX,
+  input wire logic signed [11:0] texture_translateY,
   output logic unsigned [(TILE_SIZE_POW2 * 2) - 1:0] map_address,
   output logic stencil_test,
   output logic ready);
@@ -67,25 +67,26 @@ module ibis_texture_mapper
     if(!aresetn) begin
       r_texture_matrix[4] <= 12'sh000;
     end else if(enable & write_matrix[4] & r_state[0]) begin
-      r_texture_matrix[4] <= {1'b0, texture_translateX[6:0], 4'h0};
+      r_texture_matrix[4] <= texture_translateX;
     end
   end: ibis_texture_mapper_hold_Tx
   always_ff @(posedge aclk) begin: ibis_texture_mapper_hold_Ty
     if(!aresetn) begin
       r_texture_matrix[5] <= 12'sh000;
     end else if(enable & write_matrix[5] & r_state[0]) begin
-      r_texture_matrix[5] <= {1'b0, texture_translateY[6:0], 4'h0};
+      r_texture_matrix[5] <= texture_translateY;
     end
   end: ibis_texture_mapper_hold_Ty
-  // Hold on to X and Y for now, these ought to not be signed.
+  // Hold on to X and Y for now, these should not be signed.
+  // These also should be offset to the center.
   always_ff @(posedge aclk) begin: ibis_texture_mapper_hold_X
-    if(enable & r_state[0]) begin
-      r_texture_matrix[6] <= {1'b0, x[6:0], 4'h0};
+    if(enable & r_state[1]) begin
+      r_texture_matrix[6] <= signed'({1'b0, x[6:0], 4'h0}) - r_texture_matrix[4];
     end
   end: ibis_texture_mapper_hold_X
   always_ff @(posedge aclk) begin: ibis_texture_mapper_hold_Y
-    if(enable & r_state[0]) begin
-      r_texture_matrix[7] <= {1'b0, y[6:0], 4'h0};
+    if(enable & r_state[3]) begin
+      r_texture_matrix[7] <= signed'({1'b0, y[6:0], 4'h0}) - r_texture_matrix[5];
     end
   end: ibis_texture_mapper_hold_Y
   // ==========================================================================
@@ -138,8 +139,7 @@ module ibis_texture_mapper
     if(!aresetn) begin
       r_final_sums[0] <= 24'sh000_000;
     end else if(enable & r_state[5]) begin
-      r_final_sums[0] <= (r_intermediaries[0] + r_intermediaries[1]) - 
-        ({r_texture_matrix[4][11], 12'sh000, r_texture_matrix[4][10:0]} <<< 4);
+      r_final_sums[0] <= (r_intermediaries[0] + r_intermediaries[1]) + (24'sh000080 <<< TILE_SIZE_POW2);
     end
   end: ibis_texture_mapper_calc_Xp
   always_ff @(posedge aclk) begin: ibis_texture_mapper_stencilX
@@ -153,8 +153,7 @@ module ibis_texture_mapper
     if(!aresetn) begin
       r_final_sums[1] <= 24'sh000_000;
     end else if(enable & r_state[7]) begin
-      r_final_sums[1] <= (r_intermediaries[2] + r_intermediaries[3]) -
-        ({r_texture_matrix[5][11], 12'sh000, r_texture_matrix[5][10:0]} <<< 4);
+      r_final_sums[1] <= (r_intermediaries[2] + r_intermediaries[3]) + (24'sh000080 <<< TILE_SIZE_POW2);
     end
   end: ibis_texture_mapper_calc_Yp
   always_ff @(posedge aclk) begin: ibis_texture_mapper_stencilY

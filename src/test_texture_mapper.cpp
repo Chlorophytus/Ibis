@@ -7,11 +7,13 @@ static U32 num_patterns = 0;
 static U64 offset_step = 0;
 
 U16 convert_to_s12(F64 pattern) {
-  U16 converted = std::abs(pattern * (1 << 7));
+  U16 converted = std::abs(pattern) * 128.0;
   if (std::signbit(pattern)) {
-    converted = ~converted + 1;
+    converted = ~converted;
+    converted++;
   }
-  return converted >> 3;
+  converted >>= 3;
+  return converted;
 }
 
 bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
@@ -28,9 +30,14 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
   }
   case RESET_OFF_WHEN: {
     dut.aresetn = true;
-    dut.texture_translateX = 2;
-    dut.texture_translateY = 2;
-    dut.write_matrix = (1 << 4) | (1 << 5);
+    dut.texture_translateX = convert_to_s12(20);
+    dut.texture_translateY = convert_to_s12(20);
+    dut.texture_matrixA = convert_to_s12(std::cos(0));
+    dut.texture_matrixB = convert_to_s12(-std::sin(0));
+    dut.texture_matrixC = convert_to_s12(std::sin(0));
+    dut.texture_matrixD = convert_to_s12(std::cos(0));
+    dut.write_matrix =
+        (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5);
 
     ptr_stream = std::make_unique<std::stringstream>();
     break;
@@ -69,7 +76,7 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
     case 38: {
       if (dut.stencil_test) {
         *ptr_stream << std::setfill('0') << std::setw(3) << std::hex
-                    << dut.map_address << " ";
+                    << U32{dut.map_address} << " ";
       } else {
 
         *ptr_stream << std::hex << "--- ";
@@ -79,8 +86,9 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
                              ptr_stream->str());
         ptr_stream = std::make_unique<std::stringstream>();
         if (y == (Y_WIDTH - 1)) {
-          con::listener::debug(description, ": (", step,
-                               ") | NEXT ROTATION MATRIX");
+          con::listener::debug(
+              description, ": (", step, ") | NEXT ROTATION MATRIX (",
+              current_pattern * (360.0 / (std::numbers::pi * 2.0)), "°)");
         }
       }
       break;
@@ -95,5 +103,5 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
                          ") - ready finally asserted");
   }
   dut.eval();
-  return num_patterns < 9;
+  return num_patterns <= 33;
 }
