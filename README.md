@@ -6,7 +6,7 @@ Graphics/Sound multimedia processor in SystemVerilog
 
 ### Graphics Processor
 
-- 160x120 60fps 2.5D graphics based on sprites
+- 320x240 60fps 2.5D graphics based on sprites
 
 ### Sound Processor
 
