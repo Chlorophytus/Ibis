@@ -1,11 +1,13 @@
 #pragma once
-#include "Vibis_tmds_encoder.h"
-#include "Vibis_vga_timing.h"
 #include "Vibis_popcnt6.h"
 #include "Vibis_texture_mapper.h"
+#include "Vibis_tmds_encoder.h"
+#include "Vibis_vga_timing.h"
 #include "configuration.hpp"
 #include "verilated.h"
 #include <bits/stdc++.h>
+#include <glm/glm.hpp>
+#include <raylib.h>
 
 using U8 = std::uint8_t;
 using U16 = std::uint16_t;

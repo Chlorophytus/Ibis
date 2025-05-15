@@ -5,10 +5,13 @@ cmake_minimum_required(VERSION 3.26)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Project instantiation
-project(ibis VERSION 0.1.0.22)
+project(ibis VERSION 0.1.0.23)
 
 # Find Verilator package
 find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
+
+# Find raylib
+find_package(raylib REQUIRED VERSION 5.5)
 
 # Configure the project header
 configure_file(include/configuration.txt
@@ -22,6 +25,7 @@ add_executable(${PROJECT_NAME}
     src/con.cpp
     ${${PROJECT_NAME}_TESTS}
     src/test.cpp
+    src/framebuffer.cpp
     src/main.cpp)
 
 verilate(${PROJECT_NAME} PREFIX Vibis_tmds_encoder SOURCES
@@ -44,4 +48,4 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
 # Finally link
-target_link_libraries(${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
