@@ -40,7 +40,7 @@ module ibis_texture_mapper
   output logic stencil_test,
   output logic ready);
   // ==========================================================================
-  // 10-stage r_state machine
+  // 10-stage state machine
   // ==========================================================================
   logic unsigned [9:0] r_state;
   always_ff @(posedge aclk) begin: ibis_texture_mapper_statem
