@@ -28,8 +28,17 @@ project(ibis VERSION 0.1.0.24)
 # Find Verilator package
 find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
 
-# Find raylib
-find_package(raylib REQUIRED VERSION 5.5)
+# Raylib config to OpenGL 4.3
+set(GRAPHICS GRAPHICS_API_OPENGL_43)
+
+# Fetch dependencies
+include(FetchContent)
+
+# Add Raylib 5.5
+FetchContent_Declare(
+    raylib 
+    URL https://github.com/raysan5/raylib/archive/refs/tags/5.5.tar.gz)
+FetchContent_MakeAvailable(raylib)
 
 # Configure the project header
 configure_file(include/configuration.txt

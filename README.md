@@ -1,17 +1,12 @@
 # Ibis
 
-Graphics/Sound multimedia processor in SystemVerilog
+Graphics processor in SystemVerilog
 
 ## TODOs
 
-### Graphics Processor
-
-- 320x240 60fps 2.5D graphics based on sprites
-
-### Sound Processor
-
-- State-variable fixed-point low-pass/band-pass/high-pass filters
-- Sample-based synthesis
-- Delay effects
-- Attack/Decay/Sustain/Release envelopes for filter and sample amplitude
-- I2S output
+- [x] 640x480 60fps capable DVI encoder
+- [x] Forward mapper to map display coordinates into texture addresses
+- [ ] 320x240 framebuffer gets scaled to 640x480
+- [ ] Make the forward mapper capable of selecting the power-of-2 to map with
+- [ ] Saving/loading a block memory as texture memory
+- [ ] Offseting texture memory addresses (TODO: create a better explanation)
