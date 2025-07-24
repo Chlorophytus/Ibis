@@ -63,13 +63,14 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
     dut.texture_matrixB = convert_to_fixed(reset_mat[0][1]);
     dut.texture_matrixC = convert_to_fixed(reset_mat[1][0]);
     dut.texture_matrixD = convert_to_fixed(reset_mat[1][1]);
-    dut.write_matrix =
-        (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5);
+    dut.texture_power2 = 5;
+    dut.write_registers =
+        (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5) | (1 << 6);
 
     break;
   }
   case RESET_OFF_WHEN + 20: {
-    dut.write_matrix = 0;
+    dut.write_registers = 0;
     break;
   }
   default: {
@@ -94,7 +95,7 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
         dut.texture_matrixB = convert_to_fixed(trans_mat[0][1]);
         dut.texture_matrixC = convert_to_fixed(trans_mat[1][0]);
         dut.texture_matrixD = convert_to_fixed(trans_mat[1][1]);
-        dut.write_matrix = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
+        dut.write_registers = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3);
         if (y == 0) {
           current_pattern += std::numbers::pi / 32.0;
           BeginDrawing();
@@ -110,7 +111,7 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
       break;
     }
     case 18: {
-      dut.write_matrix = 0;
+      dut.write_registers = 0;
       break;
     }
     case 38: {
