@@ -38,7 +38,7 @@ enum class priority : U8 {
 /// @brief An abstract base class for a logger
 class listener {
   virtual void _log_one(const priority, const std::string &) const = 0;
-  std::string _convert_one(void *from) {
+  static std::string _convert_one(void *from) {
     std::stringstream hex;
     hex << std::hex << "0x" << from;
     return hex.str();
