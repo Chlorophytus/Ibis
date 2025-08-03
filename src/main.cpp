@@ -49,9 +49,11 @@ int main(int argc, char **argv) {
                          "6-bit population count is fully verified");
     t.run<Vibis_tmds_encoder>(ibis::test::test_tmds_disparity,
                               "TMDS encoder doesn't over/under-bias");
-#endif
     t.run<Vibis_texture_mapper>(ibis::test::test_texture_mapper,
                                 "Texture mapper works properly");
+#endif
+    t.run<Vibis_lighting>(ibis::test::test_lighting,
+                                "Lighting engine works properly");
     ibis::framebuffer::destroy();
     error_code = EXIT_SUCCESS;
   } catch (const std::exception &e) {

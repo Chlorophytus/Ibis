@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 3.26)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Project instantiation
-project(ibis VERSION 0.1.0.26)
+project(ibis VERSION 0.1.0.27)
 
 # Find Verilator package
 find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
@@ -64,8 +64,8 @@ verilate(${PROJECT_NAME} PREFIX Vibis_popcnt6 SOURCES
   rtl/ibis_popcnt6.sv)
 verilate(${PROJECT_NAME} PREFIX Vibis_texture_mapper SOURCES
   rtl/ibis_texture_mapper.sv)
-verilate(${PROJECT_NAME} PREFIX Vibis_blitter SOURCES
-  rtl/ibis_blitter.sv)
+verilate(${PROJECT_NAME} PREFIX Vibis_lighting SOURCES
+  rtl/ibis_lighting.sv)
 
 # Use C++23 on target too
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED TRUE)

@@ -23,6 +23,7 @@
 #include "Vibis_texture_mapper.h"
 #include "Vibis_tmds_encoder.h"
 #include "Vibis_vga_timing.h"
+#include "Vibis_lighting.h"
 #include "configuration.hpp"
 #include "verilated.h"
 #include <bits/stdc++.h>

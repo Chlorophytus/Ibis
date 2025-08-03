@@ -62,5 +62,7 @@ bool test_tmds_disparity(const U64 &, Vibis_tmds_encoder &,
                          const std::string &);
 bool test_texture_mapper(const U64 &, Vibis_texture_mapper &,
                          const std::string &);
+bool test_lighting(const U64 &, Vibis_lighting &,
+                         const std::string &);
 } // namespace test
 } // namespace ibis

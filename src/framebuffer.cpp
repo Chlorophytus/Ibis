@@ -43,7 +43,6 @@ void framebuffer::draw() {
   ClearBackground(BLACK);
   UpdateTexture(render, buffer->data());
   DrawTexture(render, 0, 0, WHITE);
-  DrawFPS(20, 20);
   EndDrawing();
 }
 
