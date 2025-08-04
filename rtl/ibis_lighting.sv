@@ -180,6 +180,13 @@ module ibis_lighting
       endcase
     end
   end: ibis_lighting_attenuate
+  
+  wire unsigned [7:0] attenuation_sqrt;
+  ibis_square_root sqrt(
+    .in_bits(r_attenuation_coeff),
+    .square_root(attenuation_sqrt)
+  );
+
   always_ff @(posedge aclk) begin: ibis_lighting_stencil
     if(!aresetn) begin
       r_stencil <= 1'b0;
@@ -205,19 +212,20 @@ module ibis_lighting
       endcase
     end
   end: ibis_lighting_stencil
+
   logic unsigned [15:0] r_mixes[2];
   always_ff @(posedge aclk) begin: ibis_lighting_final0
     if(!aresetn) begin
       r_mixes[0] <= 16'h0000;
     end else if(enable & r_state[7]) begin
-      r_mixes[0] <= {8'h00, r_values[0]} * {8'h00, (8'hFF - r_attenuation_coeff)};
+      r_mixes[0] <= {8'h00, r_values[0]} * {8'h00, (8'hFF - attenuation_sqrt)};
     end
   end: ibis_lighting_final0
   always_ff @(posedge aclk) begin: ibis_lighting_final1
     if(!aresetn) begin
       r_mixes[1] <= 16'h0000;
     end else if(enable & r_state[7]) begin
-      r_mixes[1] <= {8'h00, r_values[1]} * {8'h00, r_attenuation_coeff};
+      r_mixes[1] <= {8'h00, r_values[1]} * {8'h00, attenuation_sqrt};
     end
   end: ibis_lighting_final1
   logic unsigned [7:0] r_value_out;

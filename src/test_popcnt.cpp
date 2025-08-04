@@ -26,6 +26,7 @@ bool test::test_popcnt(const U64 &step, Vibis_popcnt6 &dut, const std::string &d
   dut.eval();
 
   con::listener::debug(description, ": (", step, ") ", std::popcount(step), " =?= ", dut.count);
+  assert(std::popcount(step) == dut.count);
   
-  return step < 1 << 6;
+  return step < (1 << 6) - 1;
 }

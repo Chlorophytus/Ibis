@@ -11,3 +11,9 @@ Graphics processor in SystemVerilog
 - [ ] 320x240 framebuffer gets scaled to 640x480
 - [ ] Saving/loading a block memory as texture memory
 - [ ] Offseting texture memory addresses (TODO: create a better explanation)
+
+# Generating the lookups
+
+```
+$ ./scripts/generate_sqrt_lut.py > ./rtl/ibis_square_root.sv
+```

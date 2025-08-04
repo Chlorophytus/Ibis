@@ -64,5 +64,7 @@ bool test_texture_mapper(const U64 &, Vibis_texture_mapper &,
                          const std::string &);
 bool test_lighting(const U64 &, Vibis_lighting &,
                          const std::string &);
+bool test_square_root(const U64 &, Vibis_square_root &,
+                         const std::string &);
 } // namespace test
 } // namespace ibis

@@ -23,7 +23,7 @@
 namespace ibis {
 namespace framebuffer {
 void init();
-std::weak_ptr<std::array<U32, 640 * 480>> access();
+std::array<U32, 320 * 240> &access();
 void draw();
 void destroy();
 }

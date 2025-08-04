@@ -64,8 +64,8 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
     dut.texture_matrixC = convert_to_fixed(reset_mat[1][0]);
     dut.texture_matrixD = convert_to_fixed(reset_mat[1][1]);
     dut.texture_power2 = 5;
-    dut.write_registers =
-        (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5) | (1 << 6);
+    dut.write_registers = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) |
+                          (1 << 5) | (1 << 6);
 
     break;
   }
@@ -86,11 +86,12 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
     switch ((step - offset_step) % 40) {
     case 0: {
       if (x == 0) {
-        auto trans_mat = glm::mat2(glm::mix(SCALE / 2.0f, SCALE / 3.0f, y / 240.0f),
-                                    0.0f, 0.0f, SCALE);
+        auto trans_mat =
+            glm::mat2(glm::mix(SCALE / 2.0f, SCALE / 3.0f, y / 240.0f), 0.0f,
+                      0.0f, SCALE);
         trans_mat *=
             glm::mat2(std::cos(current_pattern), -std::sin(current_pattern),
-                       std::sin(current_pattern), std::cos(current_pattern));
+                      std::sin(current_pattern), std::cos(current_pattern));
         dut.texture_matrixA = convert_to_fixed(trans_mat[0][0]);
         dut.texture_matrixB = convert_to_fixed(trans_mat[0][1]);
         dut.texture_matrixC = convert_to_fixed(trans_mat[1][0]);
@@ -115,7 +116,7 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
       break;
     }
     case 38: {
-      auto &&buffer = ibis::framebuffer::access().lock();
+      auto &&buffer = ibis::framebuffer::access();
 
       if (dut.stencil_test) {
         U8 r = (dut.map_address & (0x007F << 0)) >> 0;
@@ -127,17 +128,9 @@ bool test::test_texture_mapper(const U64 &step, Vibis_texture_mapper &dut,
         color |= g << 1;
         color <<= 8;
         color |= r << 1;
-        for (auto dx = ((x << 1) + 0); dx < ((x << 1) + 2); dx++) {
-          for (auto dy = ((y << 1) + 0); dy < ((y << 1) + 2); dy++) {
-            (*buffer)[(640 * dy) + dx] = color;
-          }
-        }
+        buffer[(320 * y) + x] = color;
       } else {
-        for (auto dx = ((x << 1) + 0); dx < ((x << 1) + 2); dx++) {
-          for (auto dy = ((y << 1) + 0); dy < ((y << 1) + 2); dy++) {
-            (*buffer)[(640 * dy) + dx] = 0xFF000000;
-          }
-        }
+        buffer[(320 * y) + x] = 0xFF000000;
       }
 
       if ((x == (X_WIDTH - 1)) && (y == (Y_WIDTH - 1))) {

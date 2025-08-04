@@ -21,11 +21,11 @@
 #include "../include/framebuffer.hpp"
 using namespace ibis;
 
-static std::shared_ptr<std::array<U32, 640 * 480>> buffer{nullptr};
+static std::unique_ptr<std::array<U32, 320 * 240>> buffer{nullptr};
 static Texture2D render;
 
 void framebuffer::init() {
-  buffer = std::make_shared<std::array<U32, 640 * 480>>();
+  buffer = std::make_unique<std::array<U32, 320 * 240>>();
 
   for(auto &&pixel : *buffer) {
     pixel = 0xFFFFFFFF;
@@ -33,7 +33,7 @@ void framebuffer::init() {
 
   InitWindow(640, 480, "Ibis Simulated Framebuffer");
   SetTargetFPS(60);
-  auto image = GenImageColor(640, 480, GRAY);
+  auto image = GenImageColor(320, 240, GRAY);
   render = LoadTextureFromImage(image);
   UnloadImage(image);
 }
@@ -42,12 +42,13 @@ void framebuffer::draw() {
   BeginDrawing();
   ClearBackground(BLACK);
   UpdateTexture(render, buffer->data());
-  DrawTexture(render, 0, 0, WHITE);
+  DrawTextureEx(render, Vector2{0}, 0.0f, 2.0f, WHITE);
+  DrawFPS(20, 20);
   EndDrawing();
 }
 
-std::weak_ptr<std::array<U32, 640*480>> framebuffer::access() {
-  return buffer;
+std::array<U32, 320 * 240> &framebuffer::access() {
+  return *buffer;
 }
 
 void framebuffer::destroy() {

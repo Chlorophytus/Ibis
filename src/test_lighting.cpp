@@ -86,7 +86,7 @@ bool test::test_lighting(const U64 &step, Vibis_lighting &dut,
     }
 
     case 38: {
-      auto &&buffer = ibis::framebuffer::access().lock();
+      auto &&buffer = ibis::framebuffer::access();
       U32 color = 0xFF;
       color <<= 8;
       color |= dut.value_out;
@@ -94,11 +94,7 @@ bool test::test_lighting(const U64 &step, Vibis_lighting &dut,
       color |= dut.value_out;
       color <<= 8;
       color |= dut.value_out;
-      for (auto dx = ((x << 1) + 0); dx < ((x << 1) + 2); dx++) {
-        for (auto dy = ((y << 1) + 0); dy < ((y << 1) + 2); dy++) {
-          (*buffer)[(640 * dy) + dx] = color;
-        }
-      }
+      buffer[(320 * y) + x] = color;
       if ((x == (X_WIDTH - 1)) && (y == (Y_WIDTH - 1))) {
         con::listener::debug(description, ": (", step, ") | NEXT ATTENUATION (",
                              current_attenuation, ")");

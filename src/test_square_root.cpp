@@ -18,28 +18,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-#pragma once
-#include "Vibis_popcnt6.h"
-#include "Vibis_texture_mapper.h"
-#include "Vibis_tmds_encoder.h"
-#include "Vibis_vga_timing.h"
-#include "Vibis_lighting.h"
-#include "Vibis_square_root.h"
-#include "configuration.hpp"
-#include "verilated.h"
-#include <bits/stdc++.h>
-#include <glm/glm.hpp>
-#include <raylib.h>
+#include "../include/test.hpp"
+using namespace ibis;
 
-using U8 = std::uint8_t;
-using U16 = std::uint16_t;
-using U32 = std::uint32_t;
-using U64 = std::uint64_t;
+bool test::test_square_root(const U64 &step, Vibis_square_root &dut, const std::string &description) {
+  dut.in_bits = step;
+  dut.eval();
 
-using S8 = std::int8_t;
-using S16 = std::int16_t;
-using S32 = std::int32_t;
-using S64 = std::int64_t;
-
-using F32 = float;
-using F64 = double;
+  U32 truncated = std::trunc(std::sqrt(step) * 16);
+  con::listener::debug(description, ": (", step, ") ", truncated, " =?= ", dut.square_root);
+  assert(truncated == dut.square_root);
+  
+  return step < (1 << 8) - 1;
+}
