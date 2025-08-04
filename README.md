@@ -8,6 +8,7 @@ Graphics processor in SystemVerilog
 - [x] Forward mapper to map display coordinates into texture addresses
 - [x] Make the forward mapper capable of selecting the power-of-2 to map with
 - [x] Point lighting engine
+- [ ] Non-affine texture/tile rendering
 - [ ] 320x240 framebuffer gets scaled to 640x480
 - [ ] Saving/loading a block memory as texture memory
 - [ ] Offseting texture memory addresses (TODO: create a better explanation)

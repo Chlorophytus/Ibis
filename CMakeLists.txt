@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 3.26)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Project instantiation
-project(ibis VERSION 0.1.0.28)
+project(ibis VERSION 0.1.0.29)
 
 # Find Verilator package
 find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
@@ -56,8 +56,8 @@ add_executable(${PROJECT_NAME}
     src/main.cpp)
 
 verilate(${PROJECT_NAME} PREFIX Vibis_tmds_encoder SOURCES
-  rtl/ibis_tmds_encoder.sv
-  rtl/ibis_popcnt6.sv)
+  rtl/ibis_popcnt6.sv
+  rtl/ibis_tmds_encoder.sv)
 verilate(${PROJECT_NAME} PREFIX Vibis_vga_timing SOURCES
   rtl/ibis_vga_timing.sv)
 verilate(${PROJECT_NAME} PREFIX Vibis_popcnt6 SOURCES
@@ -65,8 +65,8 @@ verilate(${PROJECT_NAME} PREFIX Vibis_popcnt6 SOURCES
 verilate(${PROJECT_NAME} PREFIX Vibis_texture_mapper SOURCES
   rtl/ibis_texture_mapper.sv)
 verilate(${PROJECT_NAME} PREFIX Vibis_lighting SOURCES
-  rtl/ibis_lighting.sv
-  rtl/ibis_square_root.sv)
+  #rtl/ibis_square_root.sv
+  rtl/ibis_lighting.sv)
 verilate(${PROJECT_NAME} PREFIX Vibis_square_root SOURCES
   rtl/ibis_square_root.sv)
 
